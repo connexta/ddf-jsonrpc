@@ -15,6 +15,7 @@
         <opengis.version>19.1</opengis.version>
         <releases.repository.url />
         <snapshots.repository.url />
+        <maven.release.plugin.version>2.5.1</maven.release.plugin.version>
     </properties>
 
     <scm>
@@ -147,6 +148,16 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven.release.plugin.version}</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <preparationGoals>clean verify install</preparationGoals>
+                    <pushChanges>false</pushChanges>
+                </configuration>
             </plugin>
         </plugins>
     </build>
