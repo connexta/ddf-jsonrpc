@@ -1,4 +1,4 @@
-package org.codice.ddf.attribute.enumerations;
+package com.connexta.ddf.attribute.enumerations;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 

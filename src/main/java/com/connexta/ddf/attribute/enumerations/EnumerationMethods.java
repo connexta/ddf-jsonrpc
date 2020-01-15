@@ -1,7 +1,10 @@
-package org.codice.ddf.attribute.enumerations;
+package com.connexta.ddf.attribute.enumerations;
 
-import static org.codice.jsonrpc.JsonRpc.INVALID_PARAMS;
+import static com.connexta.jsonrpc.JsonRpc.INVALID_PARAMS;
 
+import com.connexta.jsonrpc.DocMethod;
+import com.connexta.jsonrpc.Error;
+import com.connexta.jsonrpc.MethodSet;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import ddf.catalog.data.MetacardType;
@@ -10,9 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.codice.jsonrpc.DocMethod;
-import org.codice.jsonrpc.Error;
-import org.codice.jsonrpc.MethodSet;
 
 public class EnumerationMethods implements MethodSet {
 

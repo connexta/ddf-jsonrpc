@@ -1,10 +1,14 @@
 package com.connexta.ddf.catalog.direct;
 
-import static ddf.catalog.Constants.EXPERIMENTAL_FACET_RESULTS_KEY;
-import static org.apache.commons.lang3.tuple.ImmutablePair.of;
 import static com.connexta.jsonrpc.JsonRpc.INTERNAL_ERROR;
 import static com.connexta.jsonrpc.JsonRpc.INVALID_PARAMS;
+import static ddf.catalog.Constants.EXPERIMENTAL_FACET_RESULTS_KEY;
+import static org.apache.commons.lang3.tuple.ImmutablePair.of;
 
+import com.connexta.jsonrpc.DocMethod;
+import com.connexta.jsonrpc.Error;
+import com.connexta.jsonrpc.JsonRpc;
+import com.connexta.jsonrpc.MethodSet;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -61,10 +65,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import com.connexta.jsonrpc.DocMethod;
-import com.connexta.jsonrpc.Error;
-import com.connexta.jsonrpc.JsonRpc;
-import com.connexta.jsonrpc.MethodSet;
 import org.geotools.filter.SortByImpl;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
