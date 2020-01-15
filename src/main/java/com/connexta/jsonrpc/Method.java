@@ -1,4 +1,4 @@
-package org.codice.jsonrpc;
+package com.connexta.jsonrpc;
 
 import java.util.Map;
 import java.util.function.Function;

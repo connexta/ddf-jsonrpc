@@ -1,6 +1,6 @@
-package org.codice.jsonrpc;
+package com.connexta.jsonrpc;
 
-import static org.codice.jsonrpc.JsonRpc.VERSION;
+import static com.connexta.jsonrpc.JsonRpc.VERSION;
 
 public class Response {
   public final String jsonrpc = VERSION;

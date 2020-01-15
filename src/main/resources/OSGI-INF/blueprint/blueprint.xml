@@ -33,28 +33,28 @@
   <reference id="defaultAttributeValidatorRegistry" interface="ddf.catalog.validation.AttributeValidatorRegistry" availability="optional"/>
   <reference-list id="attributeInjectors" interface="ddf.catalog.data.AttributeInjector"
                   availability="optional"/>
-  <bean id="enumerationExtractor" class="org.codice.ddf.attribute.enumerations.EnumerationExtractor">
+  <bean id="enumerationExtractor" class="com.connexta.ddf.attribute.enumerations.EnumerationExtractor">
     <argument ref="defaultAttributeValidatorRegistry" />
     <argument ref="metacardTypes" />
     <argument ref="attributeInjectors" />
   </bean>
 
 
-  <bean id="jsonRpc" class="org.codice.jsonrpc.JsonRpc">
+  <bean id="jsonRpc" class="com.connexta.jsonrpc.JsonRpc">
     <argument>
       <list>
-        <bean class="org.codice.ddf.catalog.direct.CatalogMethods">
+        <bean class="com.connexta.ddf.catalog.direct.CatalogMethods">
           <argument ref="catalogFramework"/>
           <argument ref="attributeRegistry"/>
           <argument ref="metacardTypes"/>
           <argument ref="filterBuilder"/>
           <argument ref="metacardActionRegistry"/>
 
-          <!--    <cm:managed-properties persistent-id="org.codice.ddf.resourcemanagement.usage"-->
+          <!--    <cm:managed-properties persistent-id="com.connexta.ddf.resourcemanagement.usage"-->
           <!--      update-strategy="container-managed"/>-->
           <!--    <property name="monitorLocalSources" value="false"/>-->
         </bean>
-        <bean class="org.codice.ddf.attribute.enumerations.EnumerationMethods">
+        <bean class="com.connexta.ddf.attribute.enumerations.EnumerationMethods">
           <argument ref="enumerationExtractor" />
           <property name="metacardTypes">
             <reference-list interface="ddf.catalog.data.MetacardType" availability="optional"/>
@@ -66,7 +66,7 @@
 
 
   <bean id="jsonRpcHttpServlet"
-        class="org.codice.jsonrpc.JsonRpcHttpServlet">
+        class="com.connexta.jsonrpc.JsonRpcHttpServlet">
     <argument ref="jsonRpc"/>
   </bean>
 

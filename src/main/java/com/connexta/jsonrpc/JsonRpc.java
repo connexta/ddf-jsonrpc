@@ -1,4 +1,4 @@
-package org.codice.jsonrpc;
+package com.connexta.jsonrpc;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
