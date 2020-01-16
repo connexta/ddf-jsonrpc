@@ -2,7 +2,7 @@
   <servers>
     <server>
       <id>Connexta-Nexus</id>
-      <password>${nexus_token}</password>
+      <password>${nexustoken}</password>
     </server>
   </servers>
 </settings>
