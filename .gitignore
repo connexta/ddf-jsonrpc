@@ -6,3 +6,5 @@ target
 *.classpath
 *.vscode
 .DS_Store
+pom.xml.releaseBackup
+release.properties
