@@ -2,7 +2,7 @@
   <servers>
     <server>
       <id>Connexta-Nexus</id>
-      <password>${env.PACKAGECLOUD_TOKEN}</password>
+      <password>${nexus_token}</password>
     </server>
   </servers>
 </settings>
