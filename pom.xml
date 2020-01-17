@@ -28,16 +28,12 @@
     <distributionManagement>
         <snapshotRepository>
             <id>snapshots</id>
-            <url>http://artifacts.codice.org/content/repositories/snapshots/</url>
+            <url>https://artifacts.connexta.com/content/repositories/ddf-jsonrpc-snapshots/</url>
         </snapshotRepository>
         <repository>
             <id>releases</id>
-            <url>http://artifacts.codice.org/content/repositories/releases/</url>
+            <url>https://artifacts.connexta.com/content/repositories/ddf-jsonrpc-releases/</url>
         </repository>
-        <site>
-            <id>reports</id>
-            <url>http://artifacts.codice.org/content/repositories/releases/</url>
-        </site>
     </distributionManagement>
 
     <dependencies>
