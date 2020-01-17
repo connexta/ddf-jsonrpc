@@ -2,7 +2,8 @@
   <servers>
     <server>
       <id>Connexta-Nexus</id>
-      <password>${nexustoken}</password>
+      <username>cxddfjsonrpcbot</username>
+      <password>${nexuspassword}</password>
     </server>
   </servers>
 </settings>
