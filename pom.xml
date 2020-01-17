@@ -27,11 +27,11 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>snapshots</id>
+            <id>nexus-snapshots</id>
             <url>https://artifacts.connexta.com/content/repositories/ddf-jsonrpc-snapshots/</url>
         </snapshotRepository>
         <repository>
-            <id>releases</id>
+            <id>nexus-releases</id>
             <url>https://artifacts.connexta.com/content/repositories/ddf-jsonrpc-releases/</url>
         </repository>
     </distributionManagement>
