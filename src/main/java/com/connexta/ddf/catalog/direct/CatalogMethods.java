@@ -538,6 +538,7 @@ public class CatalogMethods implements MethodSet {
     return ImmutableMap.<String, Object>builder()
         .put(ATTRIBUTES, metacardAttributes2map(metacard))
         .put("metacardType", metacard.getMetacardType().getName())
+        .put("sourceId", metacard.getSourceId())
         .build();
   }
 
