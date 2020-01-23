@@ -537,7 +537,7 @@ public class CatalogMethods implements MethodSet {
   private Map<String, Object> metacard2map(Metacard metacard) {
     return ImmutableMap.<String, Object>builder()
         .put(ATTRIBUTES, metacardAttributes2map(metacard))
-        .put("metacardType", metacard.getMetacardType().getName())
+        .put("metacardType", ImmutableMap.of("name", metacard.getMetacardType().getName()))
         .put("sourceId", metacard.getSourceId())
         .build();
   }
