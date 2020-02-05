@@ -591,9 +591,6 @@ public class CatalogMethods implements MethodSet {
   }
 
   private ImmutablePair<Attribute, String> getAttribute(String name, Object value) {
-    if (value == null) {
-      return of(null, String.format("Value for attribute '%s' was null", name));
-    }
 
     AttributeDescriptor ad =
         attributeRegistry
@@ -602,6 +599,10 @@ public class CatalogMethods implements MethodSet {
                 () ->
                     new AttributeDescriptorImpl(
                         name, true, true, false, true, BasicTypes.STRING_TYPE));
+
+    if (value == null) {
+      return of(new AttributeImpl(name, (Serializable) null), null);
+    }
 
     switch (ad.getType().getAttributeFormat()) {
       case BINARY:
