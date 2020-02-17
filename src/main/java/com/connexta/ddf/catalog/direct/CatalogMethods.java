@@ -202,7 +202,6 @@ public class CatalogMethods implements MethodSet {
             .getDeletedMetacards()
             .stream()
             .map(this::metacard2map)
-            .map(m -> ImmutableMap.of(ATTRIBUTES, m))
             .collect(Collectors.toList()));
   }
 
@@ -251,7 +250,6 @@ public class CatalogMethods implements MethodSet {
             .stream()
             .map(Update::getNewMetacard)
             .map(this::metacard2map)
-            .map(v -> ImmutableMap.of(ATTRIBUTES, v))
             .collect(Collectors.toList()));
   }
 
@@ -427,7 +425,7 @@ public class CatalogMethods implements MethodSet {
 
   private Map<String, Object> getMetacardInfo(Metacard metacard) {
     return new ImmutableMap.Builder<String, Object>()
-        .put("metacard", ImmutableMap.of("properties", this.metacard2map(metacard)))
+        .put("metacard", metacard2map(metacard))
         .put("actions", getMetacardActions(metacard))
         .build();
   }
@@ -449,7 +447,9 @@ public class CatalogMethods implements MethodSet {
   }
 
   private Map<String, List<FacetValueCount>> getFacetResults(Serializable facetResults) {
-    if (!(facetResults instanceof List)) return Collections.emptyMap();
+    if (!(facetResults instanceof List)) {
+      return Collections.emptyMap();
+    }
     List<Object> list = (List<Object>) facetResults;
     return list.stream()
         .filter(result -> result instanceof FacetAttributeResult)
@@ -531,11 +531,18 @@ public class CatalogMethods implements MethodSet {
             .getCreatedMetacards()
             .stream()
             .map(this::metacard2map)
-            .map(v -> ImmutableMap.of(ATTRIBUTES, v))
             .collect(Collectors.toList()));
   }
 
   private Map<String, Object> metacard2map(Metacard metacard) {
+    return ImmutableMap.<String, Object>builder()
+        .put(ATTRIBUTES, metacardAttributes2map(metacard))
+        .put("metacardType", ImmutableMap.of("name", metacard.getMetacardType().getName()))
+        .put("sourceId", metacard.getSourceId())
+        .build();
+  }
+
+  private Map<String, Object> metacardAttributes2map(Metacard metacard) {
     Builder<String, Object> builder = ImmutableMap.builder();
     for (AttributeDescriptor ad : metacard.getMetacardType().getAttributeDescriptors()) {
       Attribute attribute = metacard.getAttribute(ad.getName());
@@ -668,6 +675,7 @@ public class CatalogMethods implements MethodSet {
   }
 
   private static class FilterTreeParseException extends RuntimeException {
+
     private FilterTreeParseException(String msg) {
       super(msg);
     }
