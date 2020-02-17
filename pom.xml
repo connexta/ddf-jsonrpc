@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.connexta</groupId>
     <artifactId>ddf-rpc-api</artifactId>
-    <version>0.3-SNAPSHOT</version>
+    <version>0.3</version>
     <packaging>bundle</packaging>
     <name>Connexta :: JSON RPC API</name>
 
@@ -22,7 +22,7 @@
         <url>https://github.com/connexta/ddf-jsonrpc</url>
         <connection>scm:git:https://github.com/connexta/ddf-jsonrpc.git</connection>
         <developerConnection>scm:git:https://github.com/connexta/ddf-jsonrpc.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>ddf-jsonprc-0.3</tag>
     </scm>
 
     <distributionManagement>
