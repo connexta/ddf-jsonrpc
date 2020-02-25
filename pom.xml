@@ -15,11 +15,13 @@
         <opengis.version>19.1</opengis.version>
         <releases.repository.url />
         <snapshots.repository.url />
-        <maven.release.plugin.version>2.5.1</maven.release.plugin.version>
+        <maven.release.plugin.version>3.0.0-M1</maven.release.plugin.version>
+        <maven.deploy.plugin.version>3.0.0-M1</maven.deploy.plugin.version>
+
     </properties>
 
     <scm>
-        <url>https://github.com/connexta/ddf-jsonrpc</url>
+        <url>https://github.com/connexta/ddf-jsonrpc.git</url>
         <connection>scm:git:https://github.com/connexta/ddf-jsonrpc.git</connection>
         <developerConnection>scm:git:https://github.com/connexta/ddf-jsonrpc.git</developerConnection>
         <tag>HEAD</tag>
@@ -27,12 +29,12 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>nexus-snapshots</id>
-            <url>https://artifacts.connexta.com/content/repositories/ddf-jsonrpc-snapshots/</url>
+            <id>snapshots</id>
+            <url>${snapshots.repository.url}</url>
         </snapshotRepository>
         <repository>
-            <id>nexus-releases</id>
-            <url>https://artifacts.connexta.com/content/repositories/ddf-jsonrpc-releases/</url>
+            <id>releases</id>
+            <url>${releases.repository.url}</url>
         </repository>
     </distributionManagement>
 
@@ -105,7 +107,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>2.8.2</version>
+                <version>${maven.deploy.plugin.version}</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
