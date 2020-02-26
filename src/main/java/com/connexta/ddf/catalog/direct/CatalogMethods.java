@@ -343,7 +343,7 @@ public class CatalogMethods implements MethodSet {
               "sortOrder was not asc[ending] or desc[ending]",
               ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "sortOrder")));
         }
-        new SortByImpl(new PropertyNameImpl(propertyName), sortOrder);
+        sortPolicy = new SortByImpl(new PropertyNameImpl(propertyName), sortOrder);
       }
     }
 
