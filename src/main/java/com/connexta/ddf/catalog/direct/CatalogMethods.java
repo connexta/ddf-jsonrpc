@@ -27,13 +27,18 @@ import ddf.catalog.data.impl.AttributeDescriptorImpl;
 import ddf.catalog.data.impl.AttributeImpl;
 import ddf.catalog.data.impl.BasicTypes;
 import ddf.catalog.data.impl.MetacardImpl;
+import ddf.catalog.data.types.Core;
+import ddf.catalog.data.types.Security;
 import ddf.catalog.federation.FederationException;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.filter.impl.PropertyNameImpl;
+import ddf.catalog.operation.CreateRequest;
 import ddf.catalog.operation.CreateResponse;
 import ddf.catalog.operation.DeleteResponse;
 import ddf.catalog.operation.FacetAttributeResult;
 import ddf.catalog.operation.FacetValueCount;
+import ddf.catalog.operation.Query;
+import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.Update;
 import ddf.catalog.operation.UpdateResponse;
@@ -53,6 +58,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -81,7 +87,10 @@ import org.opengis.filter.sort.SortOrder;
 public class CatalogMethods implements MethodSet {
 
   private static final String ISO_8601_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+
   public static final String ATTRIBUTES = "attributes";
+
+  public static final String CREATE_KEY = "ddf.catalog/create";
 
   //  private final transient SimpleDateFormat dateFormat = new
   // SimpleDateFormat(ISO_8601_DATE_FORMAT);
@@ -91,7 +100,7 @@ public class CatalogMethods implements MethodSet {
   {
     Builder<String, DocMethod> builder = ImmutableMap.builder();
     builder.put(
-        "ddf.catalog/create",
+        CREATE_KEY,
         new DocMethod(
             this::create,
             "Takes the specified parameters (metacards) and calls"
@@ -123,6 +132,12 @@ public class CatalogMethods implements MethodSet {
             this::delete,
             "Takes the specified parameters and calls CatalogFramework::query. `params` takes:"
                 + " `ids` (Required, value: List(String))"));
+
+    builder.put(
+        "ddf.catalog/clone",
+        new DocMethod(
+            this::clone,
+            "Takes an id and calls CatalogFramework::query to get the metacard, and creates a clone of the metacard without the security attributes. `params` takes: `id` (Required, value: String)"));
     builder.put("ddf.catalog/getSourceIds", new DocMethod(this::getSourceIds, ""));
     builder.put("ddf.catalog/getSourceInfo", new DocMethod(this::getSourceInfo, ""));
     METHODS = builder.build();
@@ -181,6 +196,67 @@ public class CatalogMethods implements MethodSet {
     } catch (SourceUnavailableException e) {
       return new Error(INTERNAL_ERROR, e.getMessage());
     }
+  }
+
+  private Object clone(Map<String, Object> params) {
+    if (!(params.get(Core.ID) instanceof String)) {
+      return new Error(INVALID_PARAMS, "id must be provided");
+    }
+
+    String id = (String) params.get(Core.ID);
+    Filter idFilter = filterBuilder.attribute(Core.ID).is().equalTo().text(id);
+    Filter tagFilter = filterBuilder.attribute(Core.METACARD_TAGS).is().like().text("*");
+    Filter filter = filterBuilder.allOf(idFilter, tagFilter);
+    Query query = new QueryImpl(filter);
+
+    QueryRequest queryRequest = new QueryRequestImpl(query);
+
+    QueryResponse queryResponse;
+    try {
+      queryResponse = catalogFramework.query(queryRequest);
+    } catch (UnsupportedQueryException | SourceUnavailableException | FederationException e) {
+      return new Error(INTERNAL_ERROR, e.getMessage());
+    }
+
+    List<Result> results = queryResponse.getResults();
+
+    if (results.size() != 1) {
+      return new Error(INTERNAL_ERROR, "No metacard by given id");
+    }
+
+    Metacard metacardToClone = results.get(0).getMetacard();
+    clearAttributes(
+        metacardToClone,
+        Arrays.asList(
+            Core.ID,
+            Security.ACCESS_ADMINISTRATORS,
+            Security.ACCESS_GROUPS,
+            Security.ACCESS_GROUPS_READ,
+            Security.ACCESS_INDIVIDUALS,
+            Security.ACCESS_INDIVIDUALS_READ));
+
+    CreateRequest createRequest = new CreateRequestImpl(metacardToClone);
+
+    CreateResponse createResponse;
+    try {
+      createResponse = catalogFramework.create(createRequest);
+    } catch (IngestException | SourceUnavailableException e) {
+      return new Error(INTERNAL_ERROR, e.getMessage());
+    }
+
+    return ImmutableMap.of(
+        "createdMetacards",
+        createResponse
+            .getCreatedMetacards()
+            .stream()
+            .map(this::metacard2map)
+            .collect(Collectors.toList()));
+  }
+
+  private void clearAttributes(Metacard metacard, List<String> attributesToClear) {
+    attributesToClear.forEach(
+        attributeToClear ->
+            metacard.setAttribute(new AttributeImpl(attributeToClear, (Serializable) null)));
   }
 
   private Object delete(Map<String, Object> params) {
