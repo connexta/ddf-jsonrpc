@@ -19,7 +19,6 @@ import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Attribute;
 import ddf.catalog.data.AttributeDescriptor;
 import ddf.catalog.data.AttributeRegistry;
-import ddf.catalog.data.AttributeType.AttributeFormat;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.MetacardType;
 import ddf.catalog.data.Result;
@@ -27,18 +26,13 @@ import ddf.catalog.data.impl.AttributeDescriptorImpl;
 import ddf.catalog.data.impl.AttributeImpl;
 import ddf.catalog.data.impl.BasicTypes;
 import ddf.catalog.data.impl.MetacardImpl;
-import ddf.catalog.data.types.Core;
-import ddf.catalog.data.types.Security;
 import ddf.catalog.federation.FederationException;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.filter.impl.PropertyNameImpl;
-import ddf.catalog.operation.CreateRequest;
 import ddf.catalog.operation.CreateResponse;
 import ddf.catalog.operation.DeleteResponse;
 import ddf.catalog.operation.FacetAttributeResult;
 import ddf.catalog.operation.FacetValueCount;
-import ddf.catalog.operation.Query;
-import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.Update;
 import ddf.catalog.operation.UpdateResponse;
@@ -54,11 +48,9 @@ import ddf.catalog.source.IngestException;
 import ddf.catalog.source.SourceUnavailableException;
 import ddf.catalog.source.UnsupportedQueryException;
 import java.io.Serializable;
-import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -67,7 +59,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -133,11 +124,6 @@ public class CatalogMethods implements MethodSet {
             "Takes the specified parameters and calls CatalogFramework::query. `params` takes:"
                 + " `ids` (Required, value: List(String))"));
 
-    builder.put(
-        "ddf.catalog/clone",
-        new DocMethod(
-            this::clone,
-            "Takes an id and calls CatalogFramework::query to get the metacard, and creates a clone of the metacard without the security attributes. `params` takes: `id` (Required, value: String)"));
     builder.put("ddf.catalog/getSourceIds", new DocMethod(this::getSourceIds, ""));
     builder.put("ddf.catalog/getSourceInfo", new DocMethod(this::getSourceInfo, ""));
     METHODS = builder.build();
@@ -198,67 +184,6 @@ public class CatalogMethods implements MethodSet {
     }
   }
 
-  private Object clone(Map<String, Object> params) {
-    if (!(params.get(Core.ID) instanceof String)) {
-      return new Error(INVALID_PARAMS, "id must be provided");
-    }
-
-    String id = (String) params.get(Core.ID);
-    Filter idFilter = filterBuilder.attribute(Core.ID).is().equalTo().text(id);
-    Filter tagFilter = filterBuilder.attribute(Core.METACARD_TAGS).is().like().text("*");
-    Filter filter = filterBuilder.allOf(idFilter, tagFilter);
-    Query query = new QueryImpl(filter);
-
-    QueryRequest queryRequest = new QueryRequestImpl(query);
-
-    QueryResponse queryResponse;
-    try {
-      queryResponse = catalogFramework.query(queryRequest);
-    } catch (UnsupportedQueryException | SourceUnavailableException | FederationException e) {
-      return new Error(INTERNAL_ERROR, e.getMessage());
-    }
-
-    List<Result> results = queryResponse.getResults();
-
-    if (results.size() != 1) {
-      return new Error(INTERNAL_ERROR, "No metacard by given id");
-    }
-
-    Metacard metacardToClone = results.get(0).getMetacard();
-    clearAttributes(
-        metacardToClone,
-        Arrays.asList(
-            Core.ID,
-            Security.ACCESS_ADMINISTRATORS,
-            Security.ACCESS_GROUPS,
-            Security.ACCESS_GROUPS_READ,
-            Security.ACCESS_INDIVIDUALS,
-            Security.ACCESS_INDIVIDUALS_READ));
-
-    CreateRequest createRequest = new CreateRequestImpl(metacardToClone);
-
-    CreateResponse createResponse;
-    try {
-      createResponse = catalogFramework.create(createRequest);
-    } catch (IngestException | SourceUnavailableException e) {
-      return new Error(INTERNAL_ERROR, e.getMessage());
-    }
-
-    return ImmutableMap.of(
-        "createdMetacards",
-        createResponse
-            .getCreatedMetacards()
-            .stream()
-            .map(this::metacard2map)
-            .collect(Collectors.toList()));
-  }
-
-  private void clearAttributes(Metacard metacard, List<String> attributesToClear) {
-    attributesToClear.forEach(
-        attributeToClear ->
-            metacard.setAttribute(new AttributeImpl(attributeToClear, (Serializable) null)));
-  }
-
   private Object delete(Map<String, Object> params) {
     if (!(params.get("ids") instanceof List)) {
       return new Error(INVALID_PARAMS, "ids not provided");
@@ -277,7 +202,7 @@ public class CatalogMethods implements MethodSet {
         deleteResponse
             .getDeletedMetacards()
             .stream()
-            .map(this::metacard2map)
+            .map(Utils::metacard2map)
             .collect(Collectors.toList()));
   }
 
@@ -325,7 +250,7 @@ public class CatalogMethods implements MethodSet {
             .getUpdatedMetacards()
             .stream()
             .map(Update::getNewMetacard)
-            .map(this::metacard2map)
+            .map(Utils::metacard2map)
             .collect(Collectors.toList()));
   }
 
@@ -501,7 +426,7 @@ public class CatalogMethods implements MethodSet {
 
   private Map<String, Object> getMetacardInfo(Metacard metacard) {
     return new ImmutableMap.Builder<String, Object>()
-        .put("metacard", metacard2map(metacard))
+        .put("metacard", Utils.metacard2map(metacard))
         .put("actions", getMetacardActions(metacard))
         .build();
   }
@@ -606,44 +531,8 @@ public class CatalogMethods implements MethodSet {
         createResponse
             .getCreatedMetacards()
             .stream()
-            .map(this::metacard2map)
+            .map(Utils::metacard2map)
             .collect(Collectors.toList()));
-  }
-
-  private Map<String, Object> metacard2map(Metacard metacard) {
-    return ImmutableMap.<String, Object>builder()
-        .put(ATTRIBUTES, metacardAttributes2map(metacard))
-        .put("metacardType", ImmutableMap.of("name", metacard.getMetacardType().getName()))
-        .put("sourceId", metacard.getSourceId())
-        .build();
-  }
-
-  private Map<String, Object> metacardAttributes2map(Metacard metacard) {
-    Builder<String, Object> builder = ImmutableMap.builder();
-    for (AttributeDescriptor ad : metacard.getMetacardType().getAttributeDescriptors()) {
-      Attribute attribute = metacard.getAttribute(ad.getName());
-      if (attribute == null) {
-        continue;
-      }
-
-      Function<Object, Object> preprocessor = Function.identity();
-      if (AttributeFormat.BINARY.equals(ad.getType().getAttributeFormat())) {
-        preprocessor =
-            preprocessor.andThen(
-                input ->
-                    new String(
-                        Base64.getEncoder().encode((byte[]) input), Charset.defaultCharset()));
-      }
-
-      if (ad.isMultiValued()) {
-        builder.put(
-            attribute.getName(),
-            attribute.getValues().stream().map(preprocessor).collect(Collectors.toList()));
-      } else {
-        builder.put(attribute.getName(), preprocessor.apply(attribute.getValue()));
-      }
-    }
-    return builder.build();
   }
 
   private ImmutablePair<Metacard, String> map2Metacard(Map metacard) {
