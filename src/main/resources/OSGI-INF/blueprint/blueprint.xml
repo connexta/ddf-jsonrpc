@@ -56,10 +56,10 @@
         <!--    <property name="monitorLocalSources" value="false"/>-->
     </bean>
 
-    <bean id="extendedMethods" class="com.connexta.ddf.catalog.direct.ExtendedMethodsTest">
+    <bean id="extendedMethods" class="com.connexta.ddf.catalog.direct.ExtendedMethods">
         <argument ref="filterBuilder"/>
         <argument ref="catalogFramework"/>
-        <cm:managed-properties persistent-id="com.connexta.ddf.catalog.direct.ExtendedMethodsTest"
+        <cm:managed-properties persistent-id="com.connexta.ddf.catalog.direct.ExtendedMethods"
                                update-strategy="container-managed"/>
         <property name="cloneableAssociationAttributes">
             <list>
