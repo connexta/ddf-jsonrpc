@@ -26,7 +26,7 @@
         <junit.version>4.12</junit.version>
         <mockito-core.version>2.13.0</mockito-core.version>
         <mockito-all.version>1.10.19</mockito-all.version>
-        <codice-maven.version>0.1</codice-maven.version>
+        <codice-maven.version>0.2</codice-maven.version>
     </properties>
 
     <scm>
@@ -263,4 +263,12 @@
             <url>https://artifacts.codice.org/content/groups/public/</url>
         </repository>
     </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>codice</id>
+            <name>Codice Repository</name>
+            <url>https://artifacts.codice.org/content/groups/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
 </project>
