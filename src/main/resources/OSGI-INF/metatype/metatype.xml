@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    /**
+    * Copyright (c) Codice Foundation
+    *
+    * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation, either
+    * version 3 of the License, or any later version.
+    *
+    * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    * See the GNU Lesser General Public License for more details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+    * <http://www.gnu.org/licenses/lgpl.html>.
+    *
+    **/
+-->
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0">
+
+    <OCD description="DDF JSON RPC Configuration"
+         name="DDF JSON RPC Configuration"
+         id="com.connexta.ddf.catalog.direct.ExtendedMethodsTest">
+
+        <AD name="Cloneable Association Attributes" id="cloneableAssociationAttributes"
+            type="String" default="queries" cardinality="100"
+            description="Association Attributes that will be cloned during a clone operation.  Example : queries on a workspace"/>
+    </OCD>
+
+    <Designate pid="com.connexta.ddf.catalog.direct.ExtendedMethodsTest">
+        <Object ocdref="com.connexta.ddf.catalog.direct.ExtendedMethodsTest"/>
+    </Designate>
+
+</metatype:MetaData>
