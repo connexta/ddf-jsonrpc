@@ -36,6 +36,12 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opengis.filter.Filter;
 
+/**
+ * A class that extends normal catalog methods. Represented as a map where the key is the Json Rpc
+ * <code>method</code> string (eg, <code>ddf.catalog/create
+ * </code>). the value of the map is a Method that can be called to dispatch the corresponding
+ * extended action to the <code>CatalogFramework</code>
+ */
 public class ExtendedMethods implements MethodSet {
 
   public static final String CLONE_KEY = "ddf.catalog/clone";
@@ -91,7 +97,7 @@ public class ExtendedMethods implements MethodSet {
 
     return ImmutableMap.of(
         CREATED_METACARDS_KEY,
-        ((List<Metacard>) result).stream().map(Utils::metacard2map).collect(Collectors.toList()));
+        ((List<Metacard>) result).stream().map(MetacardMap::convert).collect(Collectors.toList()));
   }
 
   private Object doClone(String id) {

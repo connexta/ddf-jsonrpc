@@ -202,7 +202,7 @@ public class CatalogMethods implements MethodSet {
         deleteResponse
             .getDeletedMetacards()
             .stream()
-            .map(Utils::metacard2map)
+            .map(MetacardMap::convert)
             .collect(Collectors.toList()));
   }
 
@@ -250,7 +250,7 @@ public class CatalogMethods implements MethodSet {
             .getUpdatedMetacards()
             .stream()
             .map(Update::getNewMetacard)
-            .map(Utils::metacard2map)
+            .map(MetacardMap::convert)
             .collect(Collectors.toList()));
   }
 
@@ -426,7 +426,7 @@ public class CatalogMethods implements MethodSet {
 
   private Map<String, Object> getMetacardInfo(Metacard metacard) {
     return new ImmutableMap.Builder<String, Object>()
-        .put("metacard", Utils.metacard2map(metacard))
+        .put("metacard", MetacardMap.convert(metacard))
         .put("actions", getMetacardActions(metacard))
         .build();
   }
@@ -531,7 +531,7 @@ public class CatalogMethods implements MethodSet {
         createResponse
             .getCreatedMetacards()
             .stream()
-            .map(Utils::metacard2map)
+            .map(MetacardMap::convert)
             .collect(Collectors.toList()));
   }
 

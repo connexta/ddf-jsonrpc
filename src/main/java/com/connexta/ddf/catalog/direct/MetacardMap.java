@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class Utils {
+public class MetacardMap {
 
-  public static Map<String, Object> metacard2map(Metacard metacard) {
+  public static Map<String, Object> convert(Metacard metacard) {
     return ImmutableMap.<String, Object>builder()
         .put(CatalogMethods.ATTRIBUTES, metacardAttributes2map(metacard))
         .put("metacardType", ImmutableMap.of("name", metacard.getMetacardType().getName()))
