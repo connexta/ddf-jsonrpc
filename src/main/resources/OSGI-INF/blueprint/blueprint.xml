@@ -12,87 +12,88 @@
     *
     **/
 -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0">
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0">
+  
+  <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework"/>
+  
+  <reference id="attributeRegistry" interface="ddf.catalog.data.AttributeRegistry"/>
+  
+  <reference-list id="metacardTypes" interface="ddf.catalog.data.MetacardType"/>
+  
+  <reference id="filterBuilder" interface="ddf.catalog.filter.FilterBuilder"/>
+  
+  <reference id="persistentStore" interface="org.codice.ddf.persistence.PersistentStore"/>
+  
+  <reference-list id="metacardActionProviders" interface="ddf.action.ActionProvider" filter="(id=catalog.data.metacard.*)"/>
+  
+  <reference-list id="metacardMultiActionProviders" interface="ddf.action.MultiActionProvider" filter="(id=catalog.data.metacard.*)"/>
+  
+  <bean id="metacardActionRegistry" class="ddf.action.impl.ActionRegistryImpl">
+    <argument ref="metacardActionProviders"/>
+    <argument ref="metacardMultiActionProviders"/>
+  </bean>
+  
+  <bean id="subscriptionMethods" class="com.connexta.ddf.persistence.subscriptions.SubscriptionMethods">
+    <argument ref="persistentStore"/>
+  </bean>
+  
+  <reference id="defaultAttributeValidatorRegistry" interface="ddf.catalog.validation.AttributeValidatorRegistry" availability="optional"/>
+  
+  <reference-list id="attributeInjectors" interface="ddf.catalog.data.AttributeInjector" availability="optional"/>
+  
+  <bean id="enumerationExtractor" class="com.connexta.ddf.attribute.enumerations.EnumerationExtractor">
+    <argument ref="defaultAttributeValidatorRegistry"/>
+    <argument ref="metacardTypes"/>
+    <argument ref="attributeInjectors"/>
+  </bean>
 
-    <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework"/>
+  <bean id="catalogMethods" class="com.connexta.ddf.catalog.direct.CatalogMethods">
+    <argument ref="catalogFramework"/>
+    <argument ref="attributeRegistry"/>
+    <argument ref="metacardTypes"/>
+    <argument ref="filterBuilder"/>
+    <argument ref="metacardActionRegistry"/>
+    <argument ref="subscriptionMethods"/>
+    <!--    <cm:managed-properties persistent-id="com.connexta.ddf.resourcemanagement.usage"-->
+    <!--      update-strategy="container-managed"/>-->
+    <!--    <property name="monitorLocalSources" value="false"/>-->
+  </bean>
 
-    <reference id="attributeRegistry" interface="ddf.catalog.data.AttributeRegistry"/>
+  <bean id="extendedMethods" class="com.connexta.ddf.catalog.direct.ExtendedMethods">
+    <argument ref="filterBuilder"/>
+    <argument ref="catalogFramework"/>
+    <cm:managed-properties persistent-id="com.connexta.ddf.catalog.direct.ExtendedMethods" update-strategy="container-managed"/>
+    <property name="cloneableAssociationAttributes">
+      <list>
+        <value>queries</value>
+      </list>
+    </property>
+  </bean>
 
-    <reference-list id="metacardTypes" interface="ddf.catalog.data.MetacardType"/>
+  <bean id="enumerationMethods" class="com.connexta.ddf.attribute.enumerations.EnumerationMethods">
+    <argument ref="enumerationExtractor"/>
+    <property name="metacardTypes">
+      <reference-list interface="ddf.catalog.data.MetacardType" availability="optional"/>
+    </property>
+  </bean>
 
-    <reference id="filterBuilder" interface="ddf.catalog.filter.FilterBuilder"/>
+  <bean id="jsonRpc" class="com.connexta.jsonrpc.JsonRpc">
+    <argument>
+      <list>
+        <ref component-id="catalogMethods"/>
+        <ref component-id="extendedMethods"/>
+        <ref component-id="enumerationMethods"/>
+      </list>
+    </argument>
+  </bean>
 
-    <reference-list id="metacardActionProviders" interface="ddf.action.ActionProvider"
-                    filter="(id=catalog.data.metacard.*)"/>
+  <bean id="jsonRpcHttpServlet" class="com.connexta.jsonrpc.JsonRpcHttpServlet">
+    <argument ref="jsonRpc"/>
+  </bean>
 
-    <reference-list id="metacardMultiActionProviders" interface="ddf.action.MultiActionProvider"
-                    filter="(id=catalog.data.metacard.*)"/>
-
-    <bean id="metacardActionRegistry" class="ddf.action.impl.ActionRegistryImpl">
-        <argument ref="metacardActionProviders"/>
-        <argument ref="metacardMultiActionProviders"/>
-    </bean>
-
-    <reference id="defaultAttributeValidatorRegistry" interface="ddf.catalog.validation.AttributeValidatorRegistry"
-               availability="optional"/>
-
-    <reference-list id="attributeInjectors" interface="ddf.catalog.data.AttributeInjector"
-                    availability="optional"/>
-    <bean id="enumerationExtractor" class="com.connexta.ddf.attribute.enumerations.EnumerationExtractor">
-        <argument ref="defaultAttributeValidatorRegistry"/>
-        <argument ref="metacardTypes"/>
-        <argument ref="attributeInjectors"/>
-    </bean>
-
-    <bean id="catalogMethods" class="com.connexta.ddf.catalog.direct.CatalogMethods">
-        <argument ref="catalogFramework"/>
-        <argument ref="attributeRegistry"/>
-        <argument ref="metacardTypes"/>
-        <argument ref="filterBuilder"/>
-        <argument ref="metacardActionRegistry"/>
-        <!--    <cm:managed-properties persistent-id="com.connexta.ddf.resourcemanagement.usage"-->
-        <!--      update-strategy="container-managed"/>-->
-        <!--    <property name="monitorLocalSources" value="false"/>-->
-    </bean>
-
-    <bean id="extendedMethods" class="com.connexta.ddf.catalog.direct.ExtendedMethods">
-        <argument ref="filterBuilder"/>
-        <argument ref="catalogFramework"/>
-        <cm:managed-properties persistent-id="com.connexta.ddf.catalog.direct.ExtendedMethods"
-                               update-strategy="container-managed"/>
-        <property name="cloneableAssociationAttributes">
-            <list>
-                <value>queries</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="enumerationMethods" class="com.connexta.ddf.attribute.enumerations.EnumerationMethods">
-        <argument ref="enumerationExtractor"/>
-        <property name="metacardTypes">
-            <reference-list interface="ddf.catalog.data.MetacardType" availability="optional"/>
-        </property>
-    </bean>
-
-    <bean id="jsonRpc" class="com.connexta.jsonrpc.JsonRpc">
-        <argument>
-            <list>
-                <ref component-id="catalogMethods"/>
-                <ref component-id="extendedMethods"/>
-                <ref component-id="enumerationMethods"/>
-            </list>
-        </argument>
-    </bean>
-
-    <bean id="jsonRpcHttpServlet"
-          class="com.connexta.jsonrpc.JsonRpcHttpServlet">
-        <argument ref="jsonRpc"/>
-    </bean>
-
-    <service ref="jsonRpcHttpServlet" interface="javax.servlet.Servlet">
-        <service-properties>
-            <entry key="urlPatterns" value="/direct/*"/>
-        </service-properties>
-    </service>
+  <service ref="jsonRpcHttpServlet" interface="javax.servlet.Servlet">
+    <service-properties>
+      <entry key="urlPatterns" value="/direct/*"/>
+    </service-properties>
+  </service>
 </blueprint>
