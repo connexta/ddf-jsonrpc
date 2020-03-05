@@ -411,8 +411,10 @@ public class CatalogMethods implements MethodSet {
       return new Error(
           INTERNAL_ERROR, "An error occured while running your query - " + e.getMessage());
     }
+    List<String> workspaceSubscriptionIds =
+        subscription.getSubscriptions(SubjectUtils.getEmailAddress(SecurityUtils.getSubject()));
     return new ImmutableMap.Builder<String, Object>()
-        .put("results", getResults(queryResponse))
+        .put("results", getResults(queryResponse, workspaceSubscriptionIds))
         .put("status", getQueryInfo(queryResponse))
         .put(
             "facets",
@@ -420,9 +422,7 @@ public class CatalogMethods implements MethodSet {
         .build();
   }
 
-  private boolean isSubscribed(Metacard metacard) {
-    String userEmail = SubjectUtils.getEmailAddress(SecurityUtils.getSubject());
-    List<String> ids = subscription.getSubscriptions(userEmail);
+  private boolean isSubscribed(Metacard metacard, List<String> ids) {
     return ids.contains(metacard.getId());
   }
 
@@ -441,12 +441,13 @@ public class CatalogMethods implements MethodSet {
     return metacard.getAttribute("metacard-tags").getValues().contains("workspace");
   }
 
-  private Map<String, Object> getMetacardInfo(Metacard metacard) {
+  private Map<String, Object> getMetacardInfo(
+      Metacard metacard, List<String> workspaceSubscriptionIds) {
     return isWorkspace(metacard)
         ? new ImmutableMap.Builder<String, Object>()
             .put("metacard", MetacardMap.convert(metacard))
             .put("actions", getMetacardActions(metacard))
-            .put("isSubscribed", isSubscribed(metacard))
+            .put("isSubscribed", isSubscribed(metacard, workspaceSubscriptionIds))
             .build()
         : new ImmutableMap.Builder<String, Object>()
             .put("metacard", MetacardMap.convert(metacard))
@@ -454,12 +455,13 @@ public class CatalogMethods implements MethodSet {
             .build();
   }
 
-  private List<Object> getResults(QueryResponse queryResponse) {
+  private List<Object> getResults(
+      QueryResponse queryResponse, List<String> workspaceSubscriptionIds) {
     return queryResponse
         .getResults()
         .stream()
         .map(Result::getMetacard)
-        .map(this::getMetacardInfo)
+        .map(metacard -> getMetacardInfo(metacard, workspaceSubscriptionIds))
         .collect(Collectors.toList());
   }
 
