@@ -5,6 +5,7 @@ import static com.connexta.jsonrpc.JsonRpc.INVALID_PARAMS;
 import static ddf.catalog.Constants.EXPERIMENTAL_FACET_RESULTS_KEY;
 import static org.apache.commons.lang3.tuple.ImmutablePair.of;
 
+import com.connexta.ddf.persistence.subscriptions.SubscriptionMethods;
 import com.connexta.jsonrpc.DocMethod;
 import com.connexta.jsonrpc.Error;
 import com.connexta.jsonrpc.JsonRpc;
@@ -47,6 +48,7 @@ import ddf.catalog.operation.impl.UpdateRequestImpl;
 import ddf.catalog.source.IngestException;
 import ddf.catalog.source.SourceUnavailableException;
 import ddf.catalog.source.UnsupportedQueryException;
+import ddf.security.SubjectUtils;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -62,6 +64,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.shiro.SecurityUtils;
 import org.geotools.filter.SortByImpl;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
@@ -144,17 +147,21 @@ public class CatalogMethods implements MethodSet {
 
   private ActionRegistry actionRegistry;
 
+  private SubscriptionMethods subscription;
+
   public CatalogMethods(
       CatalogFramework catalogFramework,
       AttributeRegistry attributeRegistry,
       List<MetacardType> metacardTypes,
       FilterBuilder filterBuilder,
-      ActionRegistry actionRegistry) {
+      ActionRegistry actionRegistry,
+      SubscriptionMethods subscription) {
     this.catalogFramework = catalogFramework;
     this.attributeRegistry = attributeRegistry;
     this.metacardTypes = metacardTypes;
     this.filterBuilder = filterBuilder;
     this.actionRegistry = actionRegistry;
+    this.subscription = subscription;
   }
 
   private Object getSourceIds(Map<String, Object> params) {
@@ -404,13 +411,19 @@ public class CatalogMethods implements MethodSet {
       return new Error(
           INTERNAL_ERROR, "An error occured while running your query - " + e.getMessage());
     }
+    List<String> workspaceSubscriptionIds =
+        subscription.getSubscriptions(SubjectUtils.getEmailAddress(SecurityUtils.getSubject()));
     return new ImmutableMap.Builder<String, Object>()
-        .put("results", getResults(queryResponse))
+        .put("results", getResults(queryResponse, workspaceSubscriptionIds))
         .put("status", getQueryInfo(queryResponse))
         .put(
             "facets",
             getFacetResults(queryResponse.getPropertyValue(EXPERIMENTAL_FACET_RESULTS_KEY)))
         .build();
+  }
+
+  private boolean isSubscribed(Metacard metacard, List<String> ids) {
+    return ids.contains(metacard.getId());
   }
 
   private List<Action> getMetacardActions(Metacard metacard) {
@@ -424,19 +437,31 @@ public class CatalogMethods implements MethodSet {
         .collect(Collectors.toList());
   }
 
-  private Map<String, Object> getMetacardInfo(Metacard metacard) {
-    return new ImmutableMap.Builder<String, Object>()
-        .put("metacard", MetacardMap.convert(metacard))
-        .put("actions", getMetacardActions(metacard))
-        .build();
+  private boolean isWorkspace(Metacard metacard) {
+    return metacard.getAttribute("metacard-tags").getValues().contains("workspace");
   }
 
-  private List<Object> getResults(QueryResponse queryResponse) {
+  private Map<String, Object> getMetacardInfo(
+      Metacard metacard, List<String> workspaceSubscriptionIds) {
+    return isWorkspace(metacard)
+        ? new ImmutableMap.Builder<String, Object>()
+            .put("metacard", MetacardMap.convert(metacard))
+            .put("actions", getMetacardActions(metacard))
+            .put("isSubscribed", isSubscribed(metacard, workspaceSubscriptionIds))
+            .build()
+        : new ImmutableMap.Builder<String, Object>()
+            .put("metacard", MetacardMap.convert(metacard))
+            .put("actions", getMetacardActions(metacard))
+            .build();
+  }
+
+  private List<Object> getResults(
+      QueryResponse queryResponse, List<String> workspaceSubscriptionIds) {
     return queryResponse
         .getResults()
         .stream()
         .map(Result::getMetacard)
-        .map(this::getMetacardInfo)
+        .map(metacard -> getMetacardInfo(metacard, workspaceSubscriptionIds))
         .collect(Collectors.toList());
   }
 
@@ -575,7 +600,6 @@ public class CatalogMethods implements MethodSet {
     if (value == null) {
       return of(new AttributeImpl(name, (Serializable) null), null);
     }
-
     switch (ad.getType().getAttributeFormat()) {
       case BINARY:
         return of(new AttributeImpl(name, Base64.getDecoder().decode((String) value)), null);

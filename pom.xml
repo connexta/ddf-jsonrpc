@@ -94,6 +94,16 @@
             <version>${ddf.version}</version>
         </dependency>
         <dependency>
+            <groupId>ddf.security.core</groupId>
+            <artifactId>security-core-api</artifactId>
+            <version>${ddf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ddf.persistence.core</groupId>
+            <artifactId>persistence-core-api</artifactId>
+            <version>${ddf.version}</version>
+        </dependency>
+        <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <version>1.3.2</version>
@@ -234,7 +244,7 @@
                                         <limit implementation="org.codice.jacoco.LenientLimit">
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.15</minimum>
+                                            <minimum>0.18</minimum>
                                         </limit>
                                         <limit implementation="org.codice.jacoco.LenientLimit">
                                             <counter>BRANCH</counter>
@@ -244,7 +254,7 @@
                                         <limit implementation="org.codice.jacoco.LenientLimit">
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.14</minimum>
+                                            <minimum>0.18</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
