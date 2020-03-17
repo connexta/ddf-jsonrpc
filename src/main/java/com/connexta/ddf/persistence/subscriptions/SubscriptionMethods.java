@@ -1,7 +1,5 @@
 package com.connexta.ddf.persistence.subscriptions;
 
-import static org.apache.commons.lang3.Validate.notBlank;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +48,10 @@ public class SubscriptionMethods {
   }
 
   public List<String> getSubscriptions(String email) {
-    notBlank(email, "email must not be blank");
+    if (email == null || email.trim().isEmpty()) {
+      LOGGER.trace("No email given for subscriptions");
+      return Collections.emptyList();
+    }
     LOCK.lock();
     try {
       List<Map<String, Object>> results = query(email);

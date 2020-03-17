@@ -40,9 +40,10 @@ public class SubscriptionMethodsTest {
     }
   }
 
-  @Test(expected = IllegalArgumentException.class)
-  public void testEmptyEmail() throws Exception {
-    testSubscription.getSubscriptions("");
+  @Test
+  public void testEmptyEmail() {
+    List<String> results = testSubscription.getSubscriptions("");
+    assertThat(results, is(Collections.emptyList()));
   }
 
   @Test
