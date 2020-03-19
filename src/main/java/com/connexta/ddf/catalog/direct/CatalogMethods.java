@@ -318,9 +318,10 @@ public class CatalogMethods implements MethodSet {
     }
 
     SortBy sortPolicy = SortBy.NATURAL_ORDER;
-    if (params.containsKey("sortPolicy")) {
-      if (params.get("sortPolicy") instanceof Map) {
-        Map<String, Object> rawSortPolicy = (Map) params.get("sortPolicy");
+    if (params.containsKey("sortPolicy") && params.get("sortPolicy") instanceof List) {
+      List sortList = (List) params.get("sortPolicy");
+      if (!sortList.isEmpty() && sortList.get(0) instanceof Map) {
+        Map<String, Object> rawSortPolicy = (Map) sortList.get(0);
 
         if (!(rawSortPolicy.get("propertyName") instanceof String)) {
           return new Error(
