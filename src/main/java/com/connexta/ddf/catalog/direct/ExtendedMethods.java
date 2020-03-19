@@ -126,8 +126,8 @@ public class ExtendedMethods implements MethodSet {
         metacardToClone,
         Arrays.asList(
             Core.ID,
-            Core.CREATED,
-            Core.MODIFIED,
+            Core.METACARD_CREATED,
+            Core.METACARD_MODIFIED,
             Core.METACARD_OWNER,
             Security.ACCESS_ADMINISTRATORS,
             Security.ACCESS_GROUPS,
