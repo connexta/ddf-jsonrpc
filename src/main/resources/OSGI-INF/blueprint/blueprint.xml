@@ -68,6 +68,7 @@
     <argument ref="metacardActionRegistry"/>
     <argument ref="subscriptionMethods"/>
     <argument ref="metacardMap" />
+    <argument ref="listHandler" />
     <!--    <cm:managed-properties persistent-id="com.connexta.ddf.resourcemanagement.usage"-->
     <!--      update-strategy="container-managed"/>-->
     <!--    <property name="monitorLocalSources" value="false"/>-->

@@ -6,6 +6,7 @@ import static ddf.catalog.Constants.EXPERIMENTAL_FACET_RESULTS_KEY;
 import static org.apache.commons.lang3.tuple.ImmutablePair.of;
 
 import com.connexta.ddf.persistence.subscriptions.SubscriptionMethods;
+import com.connexta.ddf.transformer.RpcListHandler;
 import com.connexta.jsonrpc.DocMethod;
 import com.connexta.jsonrpc.Error;
 import com.connexta.jsonrpc.JsonRpc;
@@ -151,6 +152,8 @@ public class CatalogMethods implements MethodSet {
 
   private MetacardMap metacardMap;
 
+  private RpcListHandler listHandler;
+
   public CatalogMethods(
       CatalogFramework catalogFramework,
       AttributeRegistry attributeRegistry,
@@ -158,7 +161,8 @@ public class CatalogMethods implements MethodSet {
       FilterBuilder filterBuilder,
       ActionRegistry actionRegistry,
       SubscriptionMethods subscription,
-      MetacardMap metacardMap) {
+      MetacardMap metacardMap,
+      RpcListHandler listHandler) {
     this.catalogFramework = catalogFramework;
     this.attributeRegistry = attributeRegistry;
     this.metacardTypes = metacardTypes;
@@ -166,6 +170,7 @@ public class CatalogMethods implements MethodSet {
     this.actionRegistry = actionRegistry;
     this.subscription = subscription;
     this.metacardMap = metacardMap;
+    this.listHandler = listHandler;
   }
 
   private Object getSourceIds(Map<String, Object> params) {
@@ -582,6 +587,11 @@ public class CatalogMethods implements MethodSet {
     Metacard result = new MetacardImpl(metacardType);
 
     for (Entry<String, Object> entry : attributes.entrySet()) {
+      if (entry.getKey().equals("lists")) {
+        result.setAttribute(
+            new AttributeImpl(entry.getKey(), listHandler.listMetacardsToXml(entry.getValue())));
+        continue;
+      }
       ImmutablePair<Attribute, String> res = getAttribute(entry.getKey(), entry.getValue());
       if (res.getRight() != null) {
         return of(null, res.getRight());
