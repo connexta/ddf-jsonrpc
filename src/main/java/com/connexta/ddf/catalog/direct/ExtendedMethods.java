@@ -50,6 +50,8 @@ public class ExtendedMethods implements MethodSet {
 
   private final Map<String, DocMethod> METHODS;
 
+  private static final MetacardMap metacardMap = new MetacardMap(null);
+
   {
     Builder<String, DocMethod> builder = ImmutableMap.builder();
     builder.put(
@@ -97,7 +99,7 @@ public class ExtendedMethods implements MethodSet {
 
     return ImmutableMap.of(
         CREATED_METACARDS_KEY,
-        ((List<Metacard>) result).stream().map(MetacardMap::convert).collect(Collectors.toList()));
+        ((List<Metacard>) result).stream().map(metacardMap::convert).collect(Collectors.toList()));
   }
 
   private Object doClone(String id) {

@@ -149,19 +149,23 @@ public class CatalogMethods implements MethodSet {
 
   private SubscriptionMethods subscription;
 
+  private MetacardMap metacardMap;
+
   public CatalogMethods(
       CatalogFramework catalogFramework,
       AttributeRegistry attributeRegistry,
       List<MetacardType> metacardTypes,
       FilterBuilder filterBuilder,
       ActionRegistry actionRegistry,
-      SubscriptionMethods subscription) {
+      SubscriptionMethods subscription,
+      MetacardMap metacardMap) {
     this.catalogFramework = catalogFramework;
     this.attributeRegistry = attributeRegistry;
     this.metacardTypes = metacardTypes;
     this.filterBuilder = filterBuilder;
     this.actionRegistry = actionRegistry;
     this.subscription = subscription;
+    this.metacardMap = metacardMap;
   }
 
   private Object getSourceIds(Map<String, Object> params) {
@@ -209,7 +213,7 @@ public class CatalogMethods implements MethodSet {
         deleteResponse
             .getDeletedMetacards()
             .stream()
-            .map(MetacardMap::convert)
+            .map(metacardMap::convert)
             .collect(Collectors.toList()));
   }
 
@@ -257,7 +261,7 @@ public class CatalogMethods implements MethodSet {
             .getUpdatedMetacards()
             .stream()
             .map(Update::getNewMetacard)
-            .map(MetacardMap::convert)
+            .map(metacardMap::convert)
             .collect(Collectors.toList()));
   }
 
@@ -445,12 +449,12 @@ public class CatalogMethods implements MethodSet {
       Metacard metacard, List<String> workspaceSubscriptionIds) {
     return isWorkspace(metacard)
         ? new ImmutableMap.Builder<String, Object>()
-            .put("metacard", MetacardMap.convert(metacard))
+            .put("metacard", metacardMap.convert(metacard))
             .put("actions", getMetacardActions(metacard))
             .put("isSubscribed", isSubscribed(metacard, workspaceSubscriptionIds))
             .build()
         : new ImmutableMap.Builder<String, Object>()
-            .put("metacard", MetacardMap.convert(metacard))
+            .put("metacard", metacardMap.convert(metacard))
             .put("actions", getMetacardActions(metacard))
             .build();
   }
@@ -556,7 +560,7 @@ public class CatalogMethods implements MethodSet {
         createResponse
             .getCreatedMetacards()
             .stream()
-            .map(MetacardMap::convert)
+            .map(metacardMap::convert)
             .collect(Collectors.toList()));
   }
 

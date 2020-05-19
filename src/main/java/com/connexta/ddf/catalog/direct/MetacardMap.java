@@ -1,5 +1,6 @@
 package com.connexta.ddf.catalog.direct;
 
+import com.connexta.ddf.transformer.RpcListHandler;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import ddf.catalog.data.Attribute;
@@ -14,7 +15,15 @@ import java.util.stream.Collectors;
 
 public class MetacardMap {
 
-  public static Map<String, Object> convert(Metacard metacard) {
+  private static final String LISTS = "lists";
+
+  private final RpcListHandler listHandler;
+
+  public MetacardMap(RpcListHandler rpcListHandler) {
+    this.listHandler = rpcListHandler;
+  }
+
+  public Map<String, Object> convert(Metacard metacard) {
     return ImmutableMap.<String, Object>builder()
         .put(CatalogMethods.ATTRIBUTES, metacardAttributes2map(metacard))
         .put("metacardType", ImmutableMap.of("name", metacard.getMetacardType().getName()))
@@ -22,7 +31,7 @@ public class MetacardMap {
         .build();
   }
 
-  private static Map<String, Object> metacardAttributes2map(Metacard metacard) {
+  private Map<String, Object> metacardAttributes2map(Metacard metacard) {
     Builder<String, Object> builder = ImmutableMap.builder();
     for (AttributeDescriptor ad : metacard.getMetacardType().getAttributeDescriptors()) {
       Attribute attribute = metacard.getAttribute(ad.getName());
@@ -40,9 +49,19 @@ public class MetacardMap {
       }
 
       if (ad.isMultiValued()) {
-        builder.put(
-            attribute.getName(),
-            attribute.getValues().stream().map(preprocessor).collect(Collectors.toList()));
+        if (attribute.getName().equals(LISTS) && listHandler != null) {
+          builder.put(
+              attribute.getName(),
+              listHandler
+                  .listsXmlToMaps(attribute.getValues())
+                  .stream()
+                  .map(preprocessor)
+                  .collect(Collectors.toList()));
+        } else {
+          builder.put(
+              attribute.getName(),
+              attribute.getValues().stream().map(preprocessor).collect(Collectors.toList()));
+        }
       } else {
         builder.put(attribute.getName(), preprocessor.apply(attribute.getValue()));
       }
