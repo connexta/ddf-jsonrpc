@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class MetacardMap {
 
-  private static final String LISTS = "lists";
+  public static final String LISTS = "lists";
 
   private final RpcListHandler listHandler;
 

@@ -98,7 +98,7 @@ public class RpcListHandler {
       InputStream inputStream = IOUtils.toInputStream(xml, Charset.defaultCharset());
       return inputTransformer.transform(inputStream);
     } catch (IOException | CatalogTransformerException ex) {
-      throw new RuntimeException(ex);
+      throw new ListTransformationException(ex);
     }
   }
 
@@ -106,7 +106,7 @@ public class RpcListHandler {
     try (InputStream stream = catalogFramework.transform(metacard, "xml", null).getInputStream()) {
       return IOUtils.toString(stream, Charset.defaultCharset());
     } catch (IOException | CatalogTransformerException e) {
-      throw new RuntimeException(e);
+      throw new ListTransformationException(e);
     }
   }
 }

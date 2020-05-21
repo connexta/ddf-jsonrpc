@@ -587,7 +587,7 @@ public class CatalogMethods implements MethodSet {
     Metacard result = new MetacardImpl(metacardType);
 
     for (Entry<String, Object> entry : attributes.entrySet()) {
-      if (entry.getKey().equals("lists")) {
+      if (entry.getKey().equals(MetacardMap.LISTS)) {
         result.setAttribute(
             new AttributeImpl(entry.getKey(), listHandler.listMetacardsToXml(entry.getValue())));
         continue;
