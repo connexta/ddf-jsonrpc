@@ -261,6 +261,53 @@ public class CatalogMethods implements MethodSet {
             .collect(Collectors.toList()));
   }
 
+  private static Object getSortBy(Map<String, Object> rawSortPolicy) {
+    if (!(rawSortPolicy.get("propertyName") instanceof String)) {
+      return new Error(
+          INVALID_PARAMS,
+          "propertyName was not a string or was missing",
+          ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "propertyName")));
+    }
+    String propertyName = (String) rawSortPolicy.get("propertyName");
+
+    if (!(rawSortPolicy.get("sortOrder") instanceof String)) {
+      return new Error(
+          INVALID_PARAMS,
+          "sortOrder was not a string or was missing",
+          ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "sortOrder")));
+    }
+    String sortOrderString = (String) rawSortPolicy.get("sortOrder");
+    SortOrder sortOrder;
+    if ("ascending".equalsIgnoreCase(sortOrderString) || "asc".equalsIgnoreCase(sortOrderString)) {
+      sortOrder = SortOrder.ASCENDING;
+    } else if ("descending".equalsIgnoreCase(sortOrderString)
+        || "desc".equalsIgnoreCase(sortOrderString)) {
+      sortOrder = SortOrder.DESCENDING;
+    } else {
+      return new Error(
+          INVALID_PARAMS,
+          "sortOrder was not asc[ending] or desc[ending]",
+          ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "sortOrder")));
+    }
+    SortBy sortPolicy = new SortByImpl(new PropertyNameImpl(propertyName), sortOrder);
+    return sortPolicy;
+  }
+
+  private Map getProperties(Map<String, Object> properties) {
+    Map<String, Object> result = new HashMap<>();
+    if (properties.containsKey("additional-sort-bys")) {
+      SortBy[] additionalSortBys =
+          (SortBy[])
+              ((List) properties.get("additional-sort-bys"))
+                  .stream()
+                  .map(sort -> getSortBy((Map) sort))
+                  .toArray(SortBy[]::new);
+      result.put("additional-sort-bys", additionalSortBys);
+    }
+
+    return result;
+  }
+
   private Object query(Map<String, Object> params) {
     Filter filter = null;
     if (params.containsKey("cql") && params.containsKey("query")) {
@@ -321,37 +368,7 @@ public class CatalogMethods implements MethodSet {
     if (params.containsKey("sortPolicy")) {
       if (params.get("sortPolicy") instanceof Map) {
         Map<String, Object> rawSortPolicy = (Map) params.get("sortPolicy");
-
-        if (!(rawSortPolicy.get("propertyName") instanceof String)) {
-          return new Error(
-              INVALID_PARAMS,
-              "propertyName was not a string or was missing",
-              ImmutableMap.of(
-                  "irritant", ImmutableList.of("params", "sortPolicy", "propertyName")));
-        }
-        String propertyName = (String) rawSortPolicy.get("propertyName");
-
-        if (!(rawSortPolicy.get("sortOrder") instanceof String)) {
-          return new Error(
-              INVALID_PARAMS,
-              "sortOrder was not a string or was missing",
-              ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "sortOrder")));
-        }
-        String sortOrderString = (String) rawSortPolicy.get("sortOrder");
-        SortOrder sortOrder;
-        if ("ascending".equalsIgnoreCase(sortOrderString)
-            || "asc".equalsIgnoreCase(sortOrderString)) {
-          sortOrder = SortOrder.ASCENDING;
-        } else if ("descending".equalsIgnoreCase(sortOrderString)
-            || "desc".equalsIgnoreCase(sortOrderString)) {
-          sortOrder = SortOrder.DESCENDING;
-        } else {
-          return new Error(
-              INVALID_PARAMS,
-              "sortOrder was not asc[ending] or desc[ending]",
-              ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "sortOrder")));
-        }
-        sortPolicy = new SortByImpl(new PropertyNameImpl(propertyName), sortOrder);
+        sortPolicy = (SortBy) getSortBy(rawSortPolicy);
       }
     }
 
@@ -379,6 +396,9 @@ public class CatalogMethods implements MethodSet {
     }
 
     Map<String, Serializable> properties = new HashMap<>();
+    if (params.containsKey("properties")) {
+      properties = getProperties((Map) params.get("properties"));
+    }
     QueryResponse queryResponse;
 
     QueryRequestImpl queryRequest =
