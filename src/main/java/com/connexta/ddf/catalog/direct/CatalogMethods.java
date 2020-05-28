@@ -6,6 +6,7 @@ import static ddf.catalog.Constants.EXPERIMENTAL_FACET_RESULTS_KEY;
 import static org.apache.commons.lang3.tuple.ImmutablePair.of;
 
 import com.connexta.ddf.persistence.subscriptions.SubscriptionMethods;
+import com.connexta.ddf.transformer.RpcListHandler;
 import com.connexta.jsonrpc.DocMethod;
 import com.connexta.jsonrpc.Error;
 import com.connexta.jsonrpc.JsonRpc;
@@ -149,19 +150,27 @@ public class CatalogMethods implements MethodSet {
 
   private SubscriptionMethods subscription;
 
+  private MetacardMap metacardMap;
+
+  private RpcListHandler listHandler;
+
   public CatalogMethods(
       CatalogFramework catalogFramework,
       AttributeRegistry attributeRegistry,
       List<MetacardType> metacardTypes,
       FilterBuilder filterBuilder,
       ActionRegistry actionRegistry,
-      SubscriptionMethods subscription) {
+      SubscriptionMethods subscription,
+      MetacardMap metacardMap,
+      RpcListHandler listHandler) {
     this.catalogFramework = catalogFramework;
     this.attributeRegistry = attributeRegistry;
     this.metacardTypes = metacardTypes;
     this.filterBuilder = filterBuilder;
     this.actionRegistry = actionRegistry;
     this.subscription = subscription;
+    this.metacardMap = metacardMap;
+    this.listHandler = listHandler;
   }
 
   private Object getSourceIds(Map<String, Object> params) {
@@ -209,7 +218,7 @@ public class CatalogMethods implements MethodSet {
         deleteResponse
             .getDeletedMetacards()
             .stream()
-            .map(MetacardMap::convert)
+            .map(metacardMap::convert)
             .collect(Collectors.toList()));
   }
 
@@ -257,7 +266,7 @@ public class CatalogMethods implements MethodSet {
             .getUpdatedMetacards()
             .stream()
             .map(Update::getNewMetacard)
-            .map(MetacardMap::convert)
+            .map(metacardMap::convert)
             .collect(Collectors.toList()));
   }
 
@@ -465,12 +474,12 @@ public class CatalogMethods implements MethodSet {
       Metacard metacard, List<String> workspaceSubscriptionIds) {
     return isWorkspace(metacard)
         ? new ImmutableMap.Builder<String, Object>()
-            .put("metacard", MetacardMap.convert(metacard))
+            .put("metacard", metacardMap.convert(metacard))
             .put("actions", getMetacardActions(metacard))
             .put("isSubscribed", isSubscribed(metacard, workspaceSubscriptionIds))
             .build()
         : new ImmutableMap.Builder<String, Object>()
-            .put("metacard", MetacardMap.convert(metacard))
+            .put("metacard", metacardMap.convert(metacard))
             .put("actions", getMetacardActions(metacard))
             .build();
   }
@@ -576,7 +585,7 @@ public class CatalogMethods implements MethodSet {
         createResponse
             .getCreatedMetacards()
             .stream()
-            .map(MetacardMap::convert)
+            .map(metacardMap::convert)
             .collect(Collectors.toList()));
   }
 
@@ -598,6 +607,11 @@ public class CatalogMethods implements MethodSet {
     Metacard result = new MetacardImpl(metacardType);
 
     for (Entry<String, Object> entry : attributes.entrySet()) {
+      if (entry.getKey().equals(MetacardMap.LISTS)) {
+        result.setAttribute(
+            new AttributeImpl(entry.getKey(), listHandler.listMetacardsToXml(entry.getValue())));
+        continue;
+      }
       ImmutablePair<Attribute, String> res = getAttribute(entry.getKey(), entry.getValue());
       if (res.getRight() != null) {
         return of(null, res.getRight());

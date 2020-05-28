@@ -40,11 +40,24 @@
   <reference id="defaultAttributeValidatorRegistry" interface="ddf.catalog.validation.AttributeValidatorRegistry" availability="optional"/>
   
   <reference-list id="attributeInjectors" interface="ddf.catalog.data.AttributeInjector" availability="optional"/>
+
+  <reference id="inputTransformer" interface="ddf.catalog.transform.InputTransformer"
+  filter="(id=xml)"/>
   
   <bean id="enumerationExtractor" class="com.connexta.ddf.attribute.enumerations.EnumerationExtractor">
     <argument ref="defaultAttributeValidatorRegistry"/>
     <argument ref="metacardTypes"/>
     <argument ref="attributeInjectors"/>
+  </bean>
+
+  <bean id="listHandler" class="com.connexta.ddf.transformer.RpcListHandler">
+    <argument ref="inputTransformer" />
+    <argument ref="catalogFramework"/>
+    <argument ref="metacardTypes" />
+  </bean>
+
+  <bean id="metacardMap" class="com.connexta.ddf.catalog.direct.MetacardMap">
+    <argument ref="listHandler" />
   </bean>
 
   <bean id="catalogMethods" class="com.connexta.ddf.catalog.direct.CatalogMethods">
@@ -54,6 +67,8 @@
     <argument ref="filterBuilder"/>
     <argument ref="metacardActionRegistry"/>
     <argument ref="subscriptionMethods"/>
+    <argument ref="metacardMap" />
+    <argument ref="listHandler" />
     <!--    <cm:managed-properties persistent-id="com.connexta.ddf.resourcemanagement.usage"-->
     <!--      update-strategy="container-managed"/>-->
     <!--    <property name="monitorLocalSources" value="false"/>-->
