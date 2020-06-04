@@ -475,7 +475,8 @@ public class CatalogMethods implements MethodSet {
   }
 
   private boolean isWorkspace(Metacard metacard) {
-    return metacard.getAttribute("metacard-tags").getValues().contains("workspace");
+    return metacard.getAttribute("metacard-tags") != null
+        && metacard.getAttribute("metacard-tags").getValues().contains("workspace");
   }
 
   private Map<String, Object> getMetacardInfo(
