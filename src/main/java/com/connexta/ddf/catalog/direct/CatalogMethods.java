@@ -51,12 +51,16 @@ import ddf.catalog.source.SourceUnavailableException;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.security.SubjectUtils;
 import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -81,7 +85,11 @@ import org.opengis.filter.sort.SortOrder;
  */
 public class CatalogMethods implements MethodSet {
 
-  private static final String ISO_8601_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+  private static final String ISO_8601_DATE_STRING =
+      "[yyyyMMdd][yyyy-MM-dd][yyyy-DDD]['T'[HHmmss][HHmm][HH:mm:ss][HH:mm][.SSSSSSSSS][.SSSSSS][.SSS][.SS][.S]][OOOO][O][z][XXXXX][XXXX]['['VV']']";
+
+  private static final DateTimeFormatter DATE_FORMATTER =
+      DateTimeFormatter.ofPattern(ISO_8601_DATE_STRING).withZone(ZoneOffset.UTC);
 
   public static final String ATTRIBUTES = "attributes";
 
@@ -639,11 +647,8 @@ public class CatalogMethods implements MethodSet {
         return of(new AttributeImpl(name, Base64.getDecoder().decode((String) value)), null);
       case DATE:
         try {
-          return of(
-              new AttributeImpl(
-                  name, new SimpleDateFormat(ISO_8601_DATE_FORMAT).parse(value.toString())),
-              null);
-        } catch (ParseException e) {
+          return of(new AttributeImpl(name, parseDate(value.toString())), null);
+        } catch (DateTimeParseException e) {
           return of(
               null,
               String.format(
@@ -695,6 +700,11 @@ public class CatalogMethods implements MethodSet {
       default:
         return of(new AttributeImpl(name, String.valueOf(value)), null);
     }
+  }
+
+  private Date parseDate(Serializable date) {
+    TemporalAccessor temporalAccessor = DATE_FORMATTER.parse(date.toString());
+    return new Date(ZonedDateTime.from(temporalAccessor).toInstant().toEpochMilli());
   }
 
   private static class FilterTreeParseException extends RuntimeException {
