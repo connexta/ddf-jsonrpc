@@ -439,6 +439,7 @@ public class CatalogMethods implements MethodSet {
         .put(
             "facets",
             getFacetResults(queryResponse.getPropertyValue(EXPERIMENTAL_FACET_RESULTS_KEY)))
+        .put("properties", queryResponse.getProperties())
         .build();
   }
 
