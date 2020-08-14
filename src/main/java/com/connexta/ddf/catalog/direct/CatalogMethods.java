@@ -1,16 +1,18 @@
 package com.connexta.ddf.catalog.direct;
 
-import static com.connexta.jsonrpc.JsonRpc.INTERNAL_ERROR;
-import static com.connexta.jsonrpc.JsonRpc.INVALID_PARAMS;
+import static com.connexta.jsonrpc.impl.JsonRpc.INTERNAL_ERROR;
+import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
 import static ddf.catalog.Constants.EXPERIMENTAL_FACET_RESULTS_KEY;
 import static org.apache.commons.lang3.tuple.ImmutablePair.of;
 
 import com.connexta.ddf.persistence.subscriptions.SubscriptionMethods;
 import com.connexta.ddf.transformer.RpcListHandler;
-import com.connexta.jsonrpc.DocMethod;
-import com.connexta.jsonrpc.Error;
-import com.connexta.jsonrpc.JsonRpc;
 import com.connexta.jsonrpc.MethodSet;
+import com.connexta.jsonrpc.RpcMethod;
+import com.connexta.jsonrpc.RpcMethodFactory;
+import com.connexta.jsonrpc.impl.Error;
+import com.connexta.jsonrpc.impl.JsonRpc;
+import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -98,13 +100,15 @@ public class CatalogMethods implements MethodSet {
   //  private final transient SimpleDateFormat dateFormat = new
   // SimpleDateFormat(ISO_8601_DATE_FORMAT);
 
-  private final Map<String, DocMethod> METHODS;
+  private final RpcMethodFactory methodFactory = new RpcMethodFactoryImpl();
+
+  private final Map<String, RpcMethod> METHODS;
 
   {
-    Builder<String, DocMethod> builder = ImmutableMap.builder();
+    Builder<String, RpcMethod> builder = ImmutableMap.builder();
     builder.put(
         CREATE_KEY,
-        new DocMethod(
+        methodFactory.createMethod(
             this::create,
             "Takes the specified parameters (metacards) and calls"
                 + " CatalogFramework::create.`params` takes: `metacards(Required, value:"
@@ -112,7 +116,7 @@ public class CatalogMethods implements MethodSet {
                 + " String))) "));
     builder.put(
         "ddf.catalog/query",
-        new DocMethod(
+        methodFactory.createMethod(
             this::query,
             "Takes the specified parameters and calls CatalogFramework::query. `params` takes:"
                 + " `cql` (TemporarilyRequired, value: String of cql), `sourceIds` (Optional,"
@@ -124,25 +128,25 @@ public class CatalogMethods implements MethodSet {
 
     builder.put(
         "ddf.catalog/update",
-        new DocMethod(
+        methodFactory.createMethod(
             this::update,
             "Takes the specified parameters and calls CatalogFramework::query. `params` takes:"
                 + " `metacards(Required, value: List(Object(`metacardType`:string,"
                 + " `attributes`:Object(Required, `id`: String)))"));
     builder.put(
         "ddf.catalog/delete",
-        new DocMethod(
+        methodFactory.createMethod(
             this::delete,
             "Takes the specified parameters and calls CatalogFramework::query. `params` takes:"
                 + " `ids` (Required, value: List(String))"));
 
-    builder.put("ddf.catalog/getSourceIds", new DocMethod(this::getSourceIds, ""));
-    builder.put("ddf.catalog/getSourceInfo", new DocMethod(this::getSourceInfo, ""));
+    builder.put("ddf.catalog/getSourceIds", methodFactory.createMethod(this::getSourceIds, ""));
+    builder.put("ddf.catalog/getSourceInfo", methodFactory.createMethod(this::getSourceInfo, ""));
     METHODS = builder.build();
   }
 
   @Override
-  public Map<String, DocMethod> getMethods() {
+  public Map<String, RpcMethod> getMethods() {
     return METHODS;
   }
 

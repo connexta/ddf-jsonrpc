@@ -1,10 +1,12 @@
 package com.connexta.ddf.attribute.enumerations;
 
-import static com.connexta.jsonrpc.JsonRpc.INVALID_PARAMS;
+import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
 
-import com.connexta.jsonrpc.DocMethod;
-import com.connexta.jsonrpc.Error;
 import com.connexta.jsonrpc.MethodSet;
+import com.connexta.jsonrpc.RpcMethod;
+import com.connexta.jsonrpc.RpcMethodFactory;
+import com.connexta.jsonrpc.impl.Error;
+import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import ddf.catalog.data.MetacardType;
@@ -16,14 +18,16 @@ import java.util.stream.Collectors;
 
 public class EnumerationMethods implements MethodSet {
 
-  private final Map<String, DocMethod> METHODS;
+  private final Map<String, RpcMethod> METHODS;
+
+  private final RpcMethodFactory methodFactory = new RpcMethodFactoryImpl();
 
   {
-    Builder<String, DocMethod> builder = ImmutableMap.builder();
-    builder.put("ddf.enumerations/all", new DocMethod(this::getAllEnums, ""));
+    Builder<String, RpcMethod> builder = ImmutableMap.builder();
+    builder.put("ddf.enumerations/all", methodFactory.createMethod(this::getAllEnums, ""));
     builder.put(
         "ddf.enumerations/by-type",
-        new DocMethod(
+        methodFactory.createMethod(
             this::getEnumsByType,
             "Takes the specified parameters and calls EnumerationExtractor::getEnumerations as many times"
                 + "as necessary. `params` takes: `types(Required, value:List(String))`"));
@@ -33,7 +37,7 @@ public class EnumerationMethods implements MethodSet {
   private List<MetacardType> metacardTypes;
 
   @Override
-  public Map<String, DocMethod> getMethods() {
+  public Map<String, RpcMethod> getMethods() {
     return METHODS;
   }
 

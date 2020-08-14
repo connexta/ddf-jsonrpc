@@ -1,5 +1,6 @@
-package com.connexta.jsonrpc;
+package com.connexta.jsonrpc.impl;
 
+import com.connexta.jsonrpc.Method;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
