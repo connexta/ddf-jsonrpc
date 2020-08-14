@@ -11,8 +11,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import com.connexta.jsonrpc.DocMethod;
-import com.connexta.jsonrpc.Error;
+import com.connexta.jsonrpc.RpcMethod;
+import com.connexta.jsonrpc.impl.Error;
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.Result;
@@ -66,7 +66,7 @@ public class ExtendedMethodsTest {
   private static final List<String> CLONEABLE_ASSOCIATION_ATTRIBUTES =
       Collections.singletonList(QUERIES_ATTRIBUTE);
 
-  private DocMethod cloneMethod;
+  private RpcMethod cloneMethod;
 
   @Mock private CreateResponse createResponse;
 
@@ -247,8 +247,8 @@ public class ExtendedMethodsTest {
     return idMap;
   }
 
-  private DocMethod getCloneDocMethod() {
-    Map<String, DocMethod> map = extendedMethods.getMethods();
+  private RpcMethod getCloneDocMethod() {
+    Map<String, RpcMethod> map = extendedMethods.getMethods();
     return map.get(ExtendedMethods.CLONE_KEY);
   }
 }

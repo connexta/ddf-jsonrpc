@@ -1,14 +1,23 @@
-package com.connexta.jsonrpc;
+package com.connexta.jsonrpc.impl;
 
+import com.connexta.jsonrpc.Method;
+import com.connexta.jsonrpc.MethodSet;
+import com.connexta.jsonrpc.RpcMethod;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class JsonRpc implements Method {
+
   public static final int PARSE_ERROR = -32700;
   public static final int INVALID_REQUEST = -32600;
   public static final int METHOD_NOT_FOUND = -32601;
@@ -21,20 +30,45 @@ public class JsonRpc implements Method {
   private static final String ID = "id";
   private static final String PARAMS = "params";
 
-  private final Map<String, DocMethod> methods;
+  private final Map<String, RpcMethod> defaultMethods;
+  private final Set<MethodSet> dynamicMethods = new HashSet<>();
+  private Map<String, RpcMethod> methods = Collections.emptyMap();
 
   public JsonRpc(List<MethodSet> methodSets) {
-    Builder<String, DocMethod> builder = ImmutableMap.builder();
-    builder.put("list-methods", new DocMethod(this::listMethods, "list all available methods"));
+    Builder<String, RpcMethod> builder = ImmutableMap.builder();
+    builder.put("list-methods", new DocMethodImpl(this::listMethods, "list all available methods"));
     for (MethodSet methods : methodSets) {
       builder.putAll(methods.getMethods());
     }
-    this.methods = builder.build();
+    this.defaultMethods = builder.build();
+    recompileMethodList();
   }
 
   @Override
   public Object apply(Map<String, Object> request) {
     return process(request);
+  }
+
+  public synchronized void bindMethods(MethodSet methodSet) {
+    dynamicMethods.add(methodSet);
+    recompileMethodList();
+  }
+
+  public synchronized void unbindMethods(MethodSet methodSet) {
+    dynamicMethods.remove(methodSet);
+    recompileMethodList();
+  }
+
+  private void recompileMethodList() {
+    Map<String, RpcMethod> newMethodList = new HashMap<>(defaultMethods);
+
+    newMethodList.putAll(
+        dynamicMethods
+            .stream()
+            .flatMap(ms -> ms.getMethods().entrySet().stream())
+            .collect(Collectors.toMap(Entry::getKey, Entry::getValue, (oldVal, newVal) -> newVal)));
+
+    methods = newMethodList;
   }
 
   private Object process(Map<String, Object> request) {
@@ -86,7 +120,7 @@ public class JsonRpc implements Method {
     }
     String method = (String) request.get(METHOD);
 
-    DocMethod target = methods.get(method);
+    RpcMethod target = methods.get(method);
     if (target == null) {
       return new Error(
           METHOD_NOT_FOUND,
@@ -109,7 +143,7 @@ public class JsonRpc implements Method {
     return methods
         .entrySet()
         .stream()
-        .map(e -> ImmutableMap.of("method", e.getKey(), "docstring", e.getValue().docstring))
+        .map(e -> ImmutableMap.of("method", e.getKey(), "docstring", e.getValue().getDocstring()))
         .collect(Collectors.toList());
   }
 }

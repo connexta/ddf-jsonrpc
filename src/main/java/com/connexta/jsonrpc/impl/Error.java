@@ -1,4 +1,4 @@
-package com.connexta.jsonrpc;
+package com.connexta.jsonrpc.impl;
 
 import java.util.Collections;
 

@@ -160,7 +160,9 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Export-Package />
+                        <Export-Package>
+                            com.connexta.jsonrpc
+                        </Export-Package>
                         <Embed-Dependency>
                             guava,
                             commons-lang3,

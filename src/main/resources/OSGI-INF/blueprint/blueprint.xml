@@ -92,7 +92,8 @@
     </property>
   </bean>
 
-  <bean id="jsonRpc" class="com.connexta.jsonrpc.JsonRpc">
+  <bean id="jsonRpc" class="com.connexta.jsonrpc.impl.JsonRpc" >
+
     <argument>
       <list>
         <ref component-id="catalogMethods"/>
@@ -100,9 +101,14 @@
         <ref component-id="enumerationMethods"/>
       </list>
     </argument>
+
   </bean>
 
-  <bean id="jsonRpcHttpServlet" class="com.connexta.jsonrpc.JsonRpcHttpServlet">
+  <reference-list interface="com.connexta.jsonrpc.MethodSet" availability="optional">
+    <reference-listener ref="jsonRpc" bind-method="bindMethods" unbind-method="unbindMethods"/>
+  </reference-list>
+
+  <bean id="jsonRpcHttpServlet" class="com.connexta.jsonrpc.impl.JsonRpcHttpServlet">
     <argument ref="jsonRpc"/>
   </bean>
 
