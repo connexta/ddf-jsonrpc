@@ -1,11 +1,13 @@
 package com.connexta.ddf.catalog.direct;
 
-import static com.connexta.jsonrpc.JsonRpc.INTERNAL_ERROR;
-import static com.connexta.jsonrpc.JsonRpc.INVALID_PARAMS;
+import static com.connexta.jsonrpc.impl.JsonRpc.INTERNAL_ERROR;
+import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
 
-import com.connexta.jsonrpc.DocMethod;
-import com.connexta.jsonrpc.Error;
 import com.connexta.jsonrpc.MethodSet;
+import com.connexta.jsonrpc.RpcMethod;
+import com.connexta.jsonrpc.RpcMethodFactory;
+import com.connexta.jsonrpc.impl.Error;
+import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import ddf.catalog.CatalogFramework;
@@ -48,15 +50,17 @@ public class ExtendedMethods implements MethodSet {
 
   public static final String CREATED_METACARDS_KEY = "createdMetacards";
 
-  private final Map<String, DocMethod> METHODS;
+  private final Map<String, RpcMethod> METHODS;
+
+  private final RpcMethodFactory methodFactory = new RpcMethodFactoryImpl();
 
   private static final MetacardMap metacardMap = new MetacardMap(null);
 
   {
-    Builder<String, DocMethod> builder = ImmutableMap.builder();
+    Builder<String, RpcMethod> builder = ImmutableMap.builder();
     builder.put(
         CLONE_KEY,
-        new DocMethod(
+        methodFactory.createMethod(
             this::clone,
             "Takes an id and calls CatalogFramework::query to get the metacard, and creates a clone of the metacard without the security attributes. `params` takes: `id` (Required, value: String)"));
     METHODS = builder.build();
@@ -82,7 +86,7 @@ public class ExtendedMethods implements MethodSet {
   }
 
   @Override
-  public Map<String, DocMethod> getMethods() {
+  public Map<String, RpcMethod> getMethods() {
     return METHODS;
   }
 
