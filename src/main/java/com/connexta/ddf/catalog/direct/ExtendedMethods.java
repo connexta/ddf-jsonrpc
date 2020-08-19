@@ -2,14 +2,13 @@ package com.connexta.ddf.catalog.direct;
 
 import static com.connexta.jsonrpc.impl.JsonRpc.INTERNAL_ERROR;
 import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
+import static com.connexta.util.MapFactory.mapOf;
 
 import com.connexta.jsonrpc.MethodSet;
 import com.connexta.jsonrpc.RpcMethod;
 import com.connexta.jsonrpc.RpcMethodFactory;
 import com.connexta.jsonrpc.impl.Error;
 import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Attribute;
 import ddf.catalog.data.Metacard;
@@ -32,6 +31,7 @@ import ddf.catalog.source.SourceUnavailableException;
 import ddf.catalog.source.UnsupportedQueryException;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -57,13 +57,13 @@ public class ExtendedMethods implements MethodSet {
   private static final MetacardMap metacardMap = new MetacardMap(null);
 
   {
-    Builder<String, RpcMethod> builder = ImmutableMap.builder();
+    Map<String, RpcMethod> builder = new HashMap<>();
     builder.put(
         CLONE_KEY,
         methodFactory.createMethod(
             this::clone,
             "Takes an id and calls CatalogFramework::query to get the metacard, and creates a clone of the metacard without the security attributes. `params` takes: `id` (Required, value: String)"));
-    METHODS = builder.build();
+    METHODS = builder;
   }
 
   private List<String> cloneableAssociationAttributes;
@@ -101,7 +101,7 @@ public class ExtendedMethods implements MethodSet {
       return result;
     }
 
-    return ImmutableMap.of(
+    return mapOf(
         CREATED_METACARDS_KEY,
         ((List<Metacard>) result).stream().map(metacardMap::convert).collect(Collectors.toList()));
   }

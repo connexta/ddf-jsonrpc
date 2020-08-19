@@ -1,10 +1,10 @@
 package com.connexta.jsonrpc.impl;
 
+import static com.connexta.util.MapFactory.mapOf;
+
 import com.connexta.jsonrpc.Method;
 import com.connexta.jsonrpc.MethodSet;
 import com.connexta.jsonrpc.RpcMethod;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -35,12 +35,12 @@ public class JsonRpc implements Method {
   private Map<String, RpcMethod> methods = Collections.emptyMap();
 
   public JsonRpc(List<MethodSet> methodSets) {
-    Builder<String, RpcMethod> builder = ImmutableMap.builder();
+    Map<String, RpcMethod> builder = new HashMap<>();
     builder.put("list-methods", new DocMethodImpl(this::listMethods, "list all available methods"));
     for (MethodSet methods : methodSets) {
       builder.putAll(methods.getMethods());
     }
-    this.defaultMethods = builder.build();
+    this.defaultMethods = builder;
     recompileMethodList();
   }
 
@@ -80,22 +80,14 @@ public class JsonRpc implements Method {
     if (response instanceof Error) {
       Error error = (Error) response;
       if (error.data instanceof Map) {
-        error =
-            new Error(
-                error.code,
-                error.message,
-                ImmutableMap.builder()
-                    .putAll((Map) error.data)
-                    .put("request_duration_millis", duration.toMillis())
-                    .build());
+        Map<Object, Object> builder = new HashMap<>((Map<Object, Object>) error.data);
+        builder.put("request_duration_millis", duration.toMillis());
+        error = new Error(error.code, error.message, builder);
       }
       return new Response(error, id);
     } else if (response instanceof Map) {
-      Map updatedResponse =
-          ImmutableMap.builder()
-              .putAll((Map) response)
-              .put("request_duration_millis", duration.toMillis())
-              .build();
+      Map<Object, Object> updatedResponse = new HashMap<>((Map<Object, Object>) response);
+      updatedResponse.put("request_duration_millis", duration.toMillis());
       return new Response(updatedResponse, id);
     } else {
       return new Response(response, id);
@@ -143,7 +135,7 @@ public class JsonRpc implements Method {
     return methods
         .entrySet()
         .stream()
-        .map(e -> ImmutableMap.of("method", e.getKey(), "docstring", e.getValue().getDocstring()))
+        .map(e -> mapOf("method", e.getKey(), "docstring", e.getValue().getDocstring()))
         .collect(Collectors.toList());
   }
 }

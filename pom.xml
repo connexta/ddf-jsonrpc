@@ -54,16 +54,6 @@
             <version>3.1.0</version>
         </dependency>
         <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>28.1-jre</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
-        </dependency>
-        <dependency>
             <groupId>ddf.lib</groupId>
             <artifactId>gson-support</artifactId>
             <version>${ddf.version}</version>
@@ -164,8 +154,6 @@
                             com.connexta.jsonrpc
                         </Export-Package>
                         <Embed-Dependency>
-                            guava,
-                            commons-lang3,
                             catalog-core-api-impl,
                             platform-util
                         </Embed-Dependency>
@@ -246,7 +234,7 @@
                                         <limit implementation="org.codice.jacoco.LenientLimit">
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.18</minimum>
+                                            <minimum>0.15</minimum>
                                         </limit>
                                         <limit implementation="org.codice.jacoco.LenientLimit">
                                             <counter>BRANCH</counter>

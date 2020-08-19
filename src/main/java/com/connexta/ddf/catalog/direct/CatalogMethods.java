@@ -2,8 +2,12 @@ package com.connexta.ddf.catalog.direct;
 
 import static com.connexta.jsonrpc.impl.JsonRpc.INTERNAL_ERROR;
 import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
+import static com.connexta.util.ImmutablePair.pairOf;
+import static com.connexta.util.MapFactory.mapOf;
+import static com.connexta.util.StringUtils.isBlank;
 import static ddf.catalog.Constants.EXPERIMENTAL_FACET_RESULTS_KEY;
-import static org.apache.commons.lang3.tuple.ImmutablePair.of;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 
 import com.connexta.ddf.persistence.subscriptions.SubscriptionMethods;
 import com.connexta.ddf.transformer.RpcListHandler;
@@ -13,9 +17,7 @@ import com.connexta.jsonrpc.RpcMethodFactory;
 import com.connexta.jsonrpc.impl.Error;
 import com.connexta.jsonrpc.impl.JsonRpc;
 import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+import com.connexta.util.ImmutablePair;
 import ddf.action.Action;
 import ddf.action.ActionRegistry;
 import ddf.action.impl.ActionImpl;
@@ -69,8 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.shiro.SecurityUtils;
 import org.geotools.filter.SortByImpl;
 import org.geotools.filter.text.cql2.CQLException;
@@ -105,7 +105,7 @@ public class CatalogMethods implements MethodSet {
   private final Map<String, RpcMethod> METHODS;
 
   {
-    Builder<String, RpcMethod> builder = ImmutableMap.builder();
+    Map<String, RpcMethod> builder = new HashMap<>();
     builder.put(
         CREATE_KEY,
         methodFactory.createMethod(
@@ -142,7 +142,7 @@ public class CatalogMethods implements MethodSet {
 
     builder.put("ddf.catalog/getSourceIds", methodFactory.createMethod(this::getSourceIds, ""));
     builder.put("ddf.catalog/getSourceInfo", methodFactory.createMethod(this::getSourceInfo, ""));
-    METHODS = builder.build();
+    METHODS = builder;
   }
 
   @Override
@@ -206,7 +206,7 @@ public class CatalogMethods implements MethodSet {
         new SourceInfoRequestSources(
             (Boolean) includeContentTypes, new HashSet<>((List<String>) ids));
     try {
-      return ImmutableMap.of("sourceInfo", catalogFramework.getSourceInfo(info).getSourceInfo());
+      return singletonMap("sourceInfo", catalogFramework.getSourceInfo(info).getSourceInfo());
     } catch (SourceUnavailableException e) {
       return new Error(INTERNAL_ERROR, e.getMessage());
     }
@@ -225,7 +225,7 @@ public class CatalogMethods implements MethodSet {
       return new Error(INTERNAL_ERROR, e.getMessage());
     }
 
-    return ImmutableMap.of(
+    return mapOf(
         "deletedMetacards",
         deleteResponse
             .getDeletedMetacards()
@@ -248,13 +248,13 @@ public class CatalogMethods implements MethodSet {
         return new Error(
             JsonRpc.PARSE_ERROR,
             res.getRight(),
-            ImmutableMap.of("irritant", m, "path", ImmutableList.of("params", "metacards", i)));
+            mapOf("irritant", m, "path", asList("params", "metacards", i)));
       }
-      if (StringUtils.isBlank(res.getLeft().getId())) {
+      if (isBlank(res.getLeft().getId())) {
         return new Error(
             INVALID_PARAMS,
             "id for metacard can not be blank/empty",
-            ImmutableMap.of("irritant", m, "path", ImmutableList.of("params", "metacards", i)));
+            mapOf("irritant", m, "path", asList("params", "metacards", i)));
       }
       updateList.add(res.getLeft());
     }
@@ -272,7 +272,7 @@ public class CatalogMethods implements MethodSet {
       return new Error(INTERNAL_ERROR, e.getMessage());
     }
 
-    return ImmutableMap.of(
+    return mapOf(
         "updatedMetacards",
         updateResponse
             .getUpdatedMetacards()
@@ -287,7 +287,7 @@ public class CatalogMethods implements MethodSet {
       return new Error(
           INVALID_PARAMS,
           "propertyName was not a string or was missing",
-          ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "propertyName")));
+          mapOf("irritant", asList("params", "sortPolicy", "propertyName")));
     }
     String propertyName = (String) rawSortPolicy.get("propertyName");
 
@@ -295,7 +295,7 @@ public class CatalogMethods implements MethodSet {
       return new Error(
           INVALID_PARAMS,
           "sortOrder was not a string or was missing",
-          ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "sortOrder")));
+          mapOf("irritant", asList("params", "sortPolicy", "sortOrder")));
     }
     String sortOrderString = (String) rawSortPolicy.get("sortOrder");
     SortOrder sortOrder;
@@ -308,7 +308,7 @@ public class CatalogMethods implements MethodSet {
       return new Error(
           INVALID_PARAMS,
           "sortOrder was not asc[ending] or desc[ending]",
-          ImmutableMap.of("irritant", ImmutableList.of("params", "sortPolicy", "sortOrder")));
+          mapOf("irritant", asList("params", "sortPolicy", "sortOrder")));
     }
     SortBy sortPolicy = new SortByImpl(new PropertyNameImpl(propertyName), sortOrder);
     return sortPolicy;
@@ -340,7 +340,7 @@ public class CatalogMethods implements MethodSet {
       try {
         filter = ECQL.toFilter(cql);
       } catch (CQLException e) {
-        return new Error(INVALID_PARAMS, "could not parse cql", ImmutableMap.of("cql", cql));
+        return new Error(INVALID_PARAMS, "could not parse cql", mapOf("cql", cql));
       }
     }
 
@@ -363,11 +363,7 @@ public class CatalogMethods implements MethodSet {
         return new Error(
             INVALID_PARAMS,
             "startIndex was not a number",
-            ImmutableMap.of(
-                "irritant",
-                params.get("startIndex"),
-                "path",
-                ImmutableList.of("params", "startIndex")));
+            mapOf("irritant", params.get("startIndex"), "path", asList("params", "startIndex")));
       }
 
       startIndex = ((Number) params.get("startIndex")).intValue();
@@ -379,7 +375,7 @@ public class CatalogMethods implements MethodSet {
         return new Error(
             INVALID_PARAMS,
             "pageSize was not a number",
-            ImmutableMap.of("irritant", ImmutableList.of("params", "pageSize")));
+            mapOf("irritant", asList("params", "pageSize")));
       }
 
       pageSize = ((Number) params.get("pageSize")).intValue();
@@ -411,7 +407,7 @@ public class CatalogMethods implements MethodSet {
         return new Error(
             JsonRpc.INVALID_PARAMS,
             "sourceIds was not a List",
-            ImmutableMap.of("path", ImmutableList.of("params", "sourceIds")));
+            mapOf("path", asList("params", "sourceIds")));
       }
       sourceIds = (List<String>) params.get("sourceIds");
     }
@@ -435,7 +431,7 @@ public class CatalogMethods implements MethodSet {
         return new Error(
             JsonRpc.INVALID_PARAMS,
             "facets was not a Collection",
-            ImmutableMap.of("path", ImmutableList.of("params", "facets")));
+            mapOf("path", asList("params", "facets")));
       }
 
       queryRequest =
@@ -454,14 +450,15 @@ public class CatalogMethods implements MethodSet {
     }
     List<String> workspaceSubscriptionIds =
         subscription.getSubscriptions(SubjectUtils.getEmailAddress(SecurityUtils.getSubject()));
-    return new ImmutableMap.Builder<String, Object>()
-        .put("results", getResults(queryResponse, workspaceSubscriptionIds))
-        .put("status", getQueryInfo(queryResponse))
-        .put(
-            "facets",
-            getFacetResults(queryResponse.getPropertyValue(EXPERIMENTAL_FACET_RESULTS_KEY)))
-        .put("properties", queryResponse.getProperties())
-        .build();
+    return mapOf(
+        "results",
+        getResults(queryResponse, workspaceSubscriptionIds),
+        "status",
+        getQueryInfo(queryResponse),
+        "facets",
+        getFacetResults(queryResponse.getPropertyValue(EXPERIMENTAL_FACET_RESULTS_KEY)),
+        "properties",
+        queryResponse.getProperties());
   }
 
   private boolean isSubscribed(Metacard metacard, List<String> ids) {
@@ -487,15 +484,13 @@ public class CatalogMethods implements MethodSet {
   private Map<String, Object> getMetacardInfo(
       Metacard metacard, List<String> workspaceSubscriptionIds) {
     return isWorkspace(metacard)
-        ? new ImmutableMap.Builder<String, Object>()
-            .put("metacard", metacardMap.convert(metacard))
-            .put("actions", getMetacardActions(metacard))
-            .put("isSubscribed", isSubscribed(metacard, workspaceSubscriptionIds))
-            .build()
-        : new ImmutableMap.Builder<String, Object>()
-            .put("metacard", metacardMap.convert(metacard))
-            .put("actions", getMetacardActions(metacard))
-            .build();
+        ? mapOf(
+            "metacard", metacardMap.convert(metacard),
+            "actions", getMetacardActions(metacard),
+            "isSubscribed", isSubscribed(metacard, workspaceSubscriptionIds))
+        : mapOf(
+            "metacard", metacardMap.convert(metacard),
+            "actions", getMetacardActions(metacard));
   }
 
   private List<Object> getResults(
@@ -509,10 +504,9 @@ public class CatalogMethods implements MethodSet {
   }
 
   private Map<String, Integer> getQueryInfo(QueryResponse queryResponse) {
-    return new ImmutableMap.Builder<String, Integer>()
-        .put("hits", Math.toIntExact(queryResponse.getHits()))
-        .put("count", queryResponse.getResults().size())
-        .build();
+    return mapOf(
+        "hits", Math.toIntExact(queryResponse.getHits()),
+        "count", queryResponse.getResults().size());
   }
 
   private Map<String, List<FacetValueCount>> getFacetResults(Serializable facetResults) {
@@ -580,7 +574,7 @@ public class CatalogMethods implements MethodSet {
         return new Error(
             JsonRpc.PARSE_ERROR,
             res.getRight(),
-            ImmutableMap.of("irritant", m, "path", ImmutableList.of("params", "metacards", i)));
+            mapOf("irritant", m, "path", asList("params", "metacards", i)));
       }
       createList.add(res.getLeft());
     }
@@ -594,7 +588,7 @@ public class CatalogMethods implements MethodSet {
       return new Error(INTERNAL_ERROR, e.getMessage());
     }
 
-    return ImmutableMap.of(
+    return mapOf(
         "createdMetacards",
         createResponse
             .getCreatedMetacards()
@@ -605,7 +599,7 @@ public class CatalogMethods implements MethodSet {
 
   private ImmutablePair<Metacard, String> map2Metacard(Map metacard) {
     if (!(metacard.get(ATTRIBUTES) instanceof Map)) {
-      return of(null, "attributes not exist for params");
+      return pairOf(null, "attributes not exist for params");
     }
     Map<String, Object> attributes = (Map) metacard.get(ATTRIBUTES);
 
@@ -628,11 +622,11 @@ public class CatalogMethods implements MethodSet {
       }
       ImmutablePair<Attribute, String> res = getAttribute(entry.getKey(), entry.getValue());
       if (res.getRight() != null) {
-        return of(null, res.getRight());
+        return pairOf(null, res.getRight());
       }
       result.setAttribute(res.getLeft());
     }
-    return of(result, null);
+    return pairOf(result, null);
   }
 
   private ImmutablePair<Attribute, String> getAttribute(String name, Object value) {
@@ -646,16 +640,16 @@ public class CatalogMethods implements MethodSet {
                         name, true, true, false, true, BasicTypes.STRING_TYPE));
 
     if (value == null) {
-      return of(new AttributeImpl(name, (Serializable) null), null);
+      return pairOf(new AttributeImpl(name, (Serializable) null), null);
     }
     switch (ad.getType().getAttributeFormat()) {
       case BINARY:
-        return of(new AttributeImpl(name, Base64.getDecoder().decode((String) value)), null);
+        return pairOf(new AttributeImpl(name, Base64.getDecoder().decode((String) value)), null);
       case DATE:
         try {
-          return of(new AttributeImpl(name, parseDate(value.toString())), null);
+          return pairOf(new AttributeImpl(name, parseDate(value.toString())), null);
         } catch (DateTimeParseException e) {
-          return of(
+          return pairOf(
               null,
               String.format(
                   "Could not parse '%s' as iso8601 string".format(String.valueOf(value))));
@@ -664,47 +658,47 @@ public class CatalogMethods implements MethodSet {
       case STRING:
       case XML:
         return value instanceof List
-            ? of(new AttributeImpl(name, ((List) value)), null)
-            : of(new AttributeImpl(name, value.toString()), null);
+            ? pairOf(new AttributeImpl(name, ((List) value)), null)
+            : pairOf(new AttributeImpl(name, value.toString()), null);
       case BOOLEAN:
-        return of(new AttributeImpl(name, Boolean.parseBoolean(value.toString())), null);
+        return pairOf(new AttributeImpl(name, Boolean.parseBoolean(value.toString())), null);
       case SHORT:
         try {
-          return of(new AttributeImpl(name, Short.parseShort(value.toString())), null);
+          return pairOf(new AttributeImpl(name, Short.parseShort(value.toString())), null);
         } catch (NumberFormatException e) {
-          return of(
+          return pairOf(
               null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
         }
       case INTEGER:
         try {
-          return of(new AttributeImpl(name, Integer.parseInt(value.toString())), null);
+          return pairOf(new AttributeImpl(name, Integer.parseInt(value.toString())), null);
         } catch (NumberFormatException e) {
-          return of(
+          return pairOf(
               null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
         }
       case LONG:
         try {
-          return of(new AttributeImpl(name, Long.parseLong(value.toString())), null);
+          return pairOf(new AttributeImpl(name, Long.parseLong(value.toString())), null);
         } catch (NumberFormatException e) {
-          return of(
+          return pairOf(
               null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
         }
       case FLOAT:
         try {
-          return of(new AttributeImpl(name, Float.parseFloat(value.toString())), null);
+          return pairOf(new AttributeImpl(name, Float.parseFloat(value.toString())), null);
         } catch (NumberFormatException e) {
-          return of(
+          return pairOf(
               null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
         }
       case DOUBLE:
         try {
-          return of(new AttributeImpl(name, Double.parseDouble(value.toString())), null);
+          return pairOf(new AttributeImpl(name, Double.parseDouble(value.toString())), null);
         } catch (NumberFormatException e) {
-          return of(
+          return pairOf(
               null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
         }
       default:
-        return of(new AttributeImpl(name, String.valueOf(value)), null);
+        return pairOf(new AttributeImpl(name, String.valueOf(value)), null);
     }
   }
 
