@@ -1,7 +1,5 @@
 package com.connexta.ddf.transformer;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Attribute;
 import ddf.catalog.data.AttributeDescriptor;
@@ -11,14 +9,17 @@ import ddf.catalog.data.impl.AttributeImpl;
 import ddf.catalog.data.impl.MetacardImpl;
 import ddf.catalog.transform.CatalogTransformerException;
 import ddf.catalog.transform.InputTransformer;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.commons.io.IOUtils;
 
 public class RpcListHandler {
   private InputTransformer inputTransformer;
@@ -78,7 +79,7 @@ public class RpcListHandler {
   }
 
   private Map<String, Object> listMetacardToMap(Metacard listMetacard) {
-    Builder<String, Object> listMap = new ImmutableMap.Builder<>();
+    Map<String, Object> listMap = new HashMap<>();
     for (AttributeDescriptor ad : listMetacardType.getAttributeDescriptors()) {
       Attribute attribute = listMetacard.getAttribute(ad.getName());
       if (attribute == null) {
@@ -90,12 +91,12 @@ public class RpcListHandler {
         listMap.put(attribute.getName(), attribute.getValue());
       }
     }
-    return listMap.build();
+    return listMap;
   }
 
   private Metacard listXmlToMetacard(String xml) {
     try {
-      InputStream inputStream = IOUtils.toInputStream(xml, Charset.defaultCharset());
+      InputStream inputStream = new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset()));
       return inputTransformer.transform(inputStream);
     } catch (IOException | CatalogTransformerException ex) {
       throw new ListTransformationException(ex);
@@ -104,7 +105,9 @@ public class RpcListHandler {
 
   private String listMetacardToXml(Metacard metacard) {
     try (InputStream stream = catalogFramework.transform(metacard, "xml", null).getInputStream()) {
-      return IOUtils.toString(stream, Charset.defaultCharset());
+      return new BufferedReader(new InputStreamReader(stream))
+          .lines()
+          .collect(Collectors.joining());
     } catch (IOException | CatalogTransformerException e) {
       throw new ListTransformationException(e);
     }

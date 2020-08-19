@@ -1,14 +1,15 @@
 package com.connexta.ddf.catalog.direct;
 
+import static com.connexta.util.MapFactory.mapOf;
+
 import com.connexta.ddf.transformer.RpcListHandler;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import ddf.catalog.data.Attribute;
 import ddf.catalog.data.AttributeDescriptor;
 import ddf.catalog.data.AttributeType.AttributeFormat;
 import ddf.catalog.data.Metacard;
 import java.nio.charset.Charset;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,15 +25,15 @@ public class MetacardMap {
   }
 
   public Map<String, Object> convert(Metacard metacard) {
-    return ImmutableMap.<String, Object>builder()
-        .put(CatalogMethods.ATTRIBUTES, metacardAttributes2map(metacard))
-        .put("metacardType", ImmutableMap.of("name", metacard.getMetacardType().getName()))
-        .put("sourceId", metacard.getSourceId())
-        .build();
+    Map<String, Object> build = new HashMap<>();
+    build.put(CatalogMethods.ATTRIBUTES, metacardAttributes2map(metacard));
+    build.put("metacardType", mapOf("name", metacard.getMetacardType().getName()));
+    build.put("sourceId", metacard.getSourceId());
+    return build;
   }
 
   private Map<String, Object> metacardAttributes2map(Metacard metacard) {
-    Builder<String, Object> builder = ImmutableMap.builder();
+    Map<String, Object> builder = new HashMap<>();
     for (AttributeDescriptor ad : metacard.getMetacardType().getAttributeDescriptors()) {
       Attribute attribute = metacard.getAttribute(ad.getName());
       if (attribute == null) {
@@ -66,6 +67,6 @@ public class MetacardMap {
         builder.put(attribute.getName(), preprocessor.apply(attribute.getValue()));
       }
     }
-    return builder.build();
+    return builder;
   }
 }

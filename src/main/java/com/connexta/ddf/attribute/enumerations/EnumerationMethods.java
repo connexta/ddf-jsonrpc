@@ -1,14 +1,13 @@
 package com.connexta.ddf.attribute.enumerations;
 
 import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
+import static com.connexta.util.MapFactory.mapOf;
 
 import com.connexta.jsonrpc.MethodSet;
 import com.connexta.jsonrpc.RpcMethod;
 import com.connexta.jsonrpc.RpcMethodFactory;
 import com.connexta.jsonrpc.impl.Error;
 import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import ddf.catalog.data.MetacardType;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +22,7 @@ public class EnumerationMethods implements MethodSet {
   private final RpcMethodFactory methodFactory = new RpcMethodFactoryImpl();
 
   {
-    Builder<String, RpcMethod> builder = ImmutableMap.builder();
+    Map<String, RpcMethod> builder = new HashMap<>();
     builder.put("ddf.enumerations/all", methodFactory.createMethod(this::getAllEnums, ""));
     builder.put(
         "ddf.enumerations/by-type",
@@ -31,7 +30,7 @@ public class EnumerationMethods implements MethodSet {
             this::getEnumsByType,
             "Takes the specified parameters and calls EnumerationExtractor::getEnumerations as many times"
                 + "as necessary. `params` takes: `types(Required, value:List(String))`"));
-    METHODS = builder.build();
+    METHODS = builder;
   }
 
   private List<MetacardType> metacardTypes;
@@ -53,7 +52,7 @@ public class EnumerationMethods implements MethodSet {
       return new Error(INVALID_PARAMS, "invalid types param");
     }
 
-    return ImmutableMap.of("enumerations", getEnumsFromMetacardTypes((List<String>) types));
+    return mapOf("enumerations", getEnumsFromMetacardTypes((List<String>) types));
   }
 
   private Map<String, Set<String>> getEnumsFromMetacardTypes(List<String> types) {
@@ -78,7 +77,7 @@ public class EnumerationMethods implements MethodSet {
 
     // TODO: Add enums from ConfigurationApplication
 
-    return ImmutableMap.of("enumerations", enumerations);
+    return mapOf("enumerations", enumerations);
   }
 
   /** @param metacardTypes the metacardTypes to set */
