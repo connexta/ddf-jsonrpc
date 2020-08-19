@@ -1,8 +1,7 @@
 package com.connexta.ddf.attribute.enumerations;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
+import static com.connexta.util.StringUtils.isBlank;
 
-import com.google.common.collect.Sets;
 import ddf.catalog.data.AttributeInjector;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.MetacardType;
@@ -11,6 +10,7 @@ import ddf.catalog.data.impl.MetacardImpl;
 import ddf.catalog.validation.AttributeValidatorRegistry;
 import ddf.catalog.validation.violation.ValidationViolation;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -57,7 +57,9 @@ public class EnumerationExtractor {
                     .collect(Collectors.toMap(o -> o, o -> avr.getSuggestedValues())))
         .reduce(
             (m1, m2) -> {
-              m2.entrySet().forEach(e -> m1.merge(e.getKey(), e.getValue(), Sets::union));
+              m2.entrySet()
+                  .forEach(
+                      e -> m1.merge(e.getKey(), e.getValue(), EnumerationExtractor::mergeSets));
               return m1;
             })
         .orElseGet(HashMap::new);
@@ -96,7 +98,7 @@ public class EnumerationExtractor {
                     .collect(Collectors.toMap(o -> o, o -> avr.getSuggestedValues())))
         .reduce(
             (m1, m2) -> {
-              m2.entrySet().forEach(e -> m1.merge(e.getKey(), e.getValue(), Sets::union));
+              m2.forEach((key, value) -> m1.merge(key, value, EnumerationExtractor::mergeSets));
               return m1;
             })
         .orElseGet(HashMap::new);
@@ -117,5 +119,12 @@ public class EnumerationExtractor {
       metacard = injector.injectAttributes(metacard);
     }
     return metacard.getMetacardType();
+  }
+
+  private static Set<String> mergeSets(Set<String> s1, Set<String> s2) {
+    Set<String> result = new HashSet<>();
+    result.addAll(s1);
+    result.addAll(s2);
+    return result;
   }
 }

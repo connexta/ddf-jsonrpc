@@ -1,7 +1,8 @@
 package com.connexta.jsonrpc.impl;
 
+import static com.connexta.util.MapFactory.mapOf;
+
 import com.connexta.jsonrpc.Method;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import java.io.IOException;
@@ -30,8 +31,7 @@ public class JsonRpcHttpServlet extends HttpServlet {
   @Override
   protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     resp.setHeader("Content-Type", "application/json");
-    Map<String, Object> request =
-        ImmutableMap.of("id", 0, "method", "list-methods", "params", ImmutableMap.of());
+    Map<String, Object> request = mapOf("id", 0, "method", "list-methods", "params", mapOf());
     Object methods = method.apply(request);
 
     try (Writer writer = getWriter(req, resp)) {
