@@ -5,10 +5,10 @@ import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
 import static com.connexta.util.MapFactory.mapOf;
 
 import com.connexta.jsonrpc.MethodSet;
+import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.RpcMethod;
-import com.connexta.jsonrpc.RpcMethodFactory;
-import com.connexta.jsonrpc.impl.Error;
-import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
+import com.connexta.jsonrpc.impl.ErrorImpl;
+import com.connexta.jsonrpc.impl.RpcFactoryImpl;
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Attribute;
 import ddf.catalog.data.Metacard;
@@ -52,7 +52,7 @@ public class ExtendedMethods implements MethodSet {
 
   private final Map<String, RpcMethod> METHODS;
 
-  private final RpcMethodFactory methodFactory = new RpcMethodFactoryImpl();
+  private final RpcFactory methodFactory = new RpcFactoryImpl();
 
   private static final MetacardMap metacardMap = new MetacardMap(null);
 
@@ -60,7 +60,7 @@ public class ExtendedMethods implements MethodSet {
     Map<String, RpcMethod> builder = new HashMap<>();
     builder.put(
         CLONE_KEY,
-        methodFactory.createMethod(
+        methodFactory.method(
             this::clone,
             "Takes an id and calls CatalogFramework::query to get the metacard, and creates a clone of the metacard without the security attributes. `params` takes: `id` (Required, value: String)"));
     METHODS = builder;
@@ -92,12 +92,12 @@ public class ExtendedMethods implements MethodSet {
 
   private Object clone(Map<String, Object> params) {
     if (!(params.get(Core.ID) instanceof String)) {
-      return new Error(INVALID_PARAMS, "id must be provided");
+      return methodFactory.error(INVALID_PARAMS, "id must be provided");
     }
 
     Object result = doClone((String) params.get(Core.ID));
 
-    if (result instanceof Error) {
+    if (result instanceof ErrorImpl) {
       return result;
     }
 
@@ -118,13 +118,13 @@ public class ExtendedMethods implements MethodSet {
     try {
       queryResponse = catalogFramework.query(queryRequest);
     } catch (UnsupportedQueryException | SourceUnavailableException | FederationException e) {
-      return new Error(INTERNAL_ERROR, e.getMessage());
+      return methodFactory.error(INTERNAL_ERROR, e.getMessage());
     }
 
     List<Result> results = queryResponse.getResults();
 
     if (results.size() != 1) {
-      return new Error(INTERNAL_ERROR, "No metacard by given id");
+      return methodFactory.error(INTERNAL_ERROR, "No metacard by given id");
     }
 
     Metacard metacardToClone = results.get(0).getMetacard();
@@ -148,7 +148,7 @@ public class ExtendedMethods implements MethodSet {
     try {
       createResponse = catalogFramework.create(createRequest);
     } catch (IngestException | SourceUnavailableException e) {
-      return new Error(INTERNAL_ERROR, e.getMessage());
+      return methodFactory.error(INTERNAL_ERROR, e.getMessage());
     }
 
     return createResponse.getCreatedMetacards();

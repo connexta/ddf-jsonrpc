@@ -4,10 +4,9 @@ import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
 import static com.connexta.util.MapFactory.mapOf;
 
 import com.connexta.jsonrpc.MethodSet;
+import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.RpcMethod;
-import com.connexta.jsonrpc.RpcMethodFactory;
-import com.connexta.jsonrpc.impl.Error;
-import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
+import com.connexta.jsonrpc.impl.RpcFactoryImpl;
 import ddf.catalog.data.MetacardType;
 import java.util.HashMap;
 import java.util.List;
@@ -19,14 +18,14 @@ public class EnumerationMethods implements MethodSet {
 
   private final Map<String, RpcMethod> METHODS;
 
-  private final RpcMethodFactory methodFactory = new RpcMethodFactoryImpl();
+  private final RpcFactory methodFactory = new RpcFactoryImpl();
 
   {
     Map<String, RpcMethod> builder = new HashMap<>();
-    builder.put("ddf.enumerations/all", methodFactory.createMethod(this::getAllEnums, ""));
+    builder.put("ddf.enumerations/all", methodFactory.method(this::getAllEnums, ""));
     builder.put(
         "ddf.enumerations/by-type",
-        methodFactory.createMethod(
+        methodFactory.method(
             this::getEnumsByType,
             "Takes the specified parameters and calls EnumerationExtractor::getEnumerations as many times"
                 + "as necessary. `params` takes: `types(Required, value:List(String))`"));
@@ -49,7 +48,7 @@ public class EnumerationMethods implements MethodSet {
   private Object getEnumsByType(Map<String, Object> params) {
     Object types = params.get("types");
     if (!(types instanceof List)) {
-      return new Error(INVALID_PARAMS, "invalid types param");
+      return methodFactory.error(INVALID_PARAMS, "invalid types param");
     }
 
     return mapOf("enumerations", getEnumsFromMetacardTypes((List<String>) types));

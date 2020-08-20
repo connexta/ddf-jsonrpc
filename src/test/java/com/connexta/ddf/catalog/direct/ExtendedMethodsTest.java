@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import com.connexta.jsonrpc.RpcMethod;
-import com.connexta.jsonrpc.impl.Error;
+import com.connexta.jsonrpc.impl.ErrorImpl;
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.Result;
@@ -110,7 +110,7 @@ public class ExtendedMethodsTest {
   public void testCloneWithoutId() {
     Map<String, Object> idMap = new HashMap<>();
     Object resultObject = cloneMethod.apply(idMap);
-    assertThat(resultObject, instanceOf(Error.class));
+    assertThat(resultObject, instanceOf(ErrorImpl.class));
   }
 
   @Test
@@ -120,7 +120,7 @@ public class ExtendedMethodsTest {
         .thenThrow(UnsupportedQueryException.class);
     Map<String, Object> idMap = getIdMap();
     Object resultObject = cloneMethod.apply(idMap);
-    assertThat(resultObject, instanceOf(Error.class));
+    assertThat(resultObject, instanceOf(ErrorImpl.class));
   }
 
   @Test
@@ -130,7 +130,7 @@ public class ExtendedMethodsTest {
         .thenThrow(SourceUnavailableException.class);
     Map<String, Object> idMap = getIdMap();
     Object resultObject = cloneMethod.apply(idMap);
-    assertThat(resultObject, instanceOf(Error.class));
+    assertThat(resultObject, instanceOf(ErrorImpl.class));
   }
 
   @Test
@@ -139,7 +139,7 @@ public class ExtendedMethodsTest {
     when(catalogFramework.query(any(QueryRequest.class))).thenThrow(FederationException.class);
     Map<String, Object> idMap = getIdMap();
     Object resultObject = cloneMethod.apply(idMap);
-    assertThat(resultObject, instanceOf(Error.class));
+    assertThat(resultObject, instanceOf(ErrorImpl.class));
   }
 
   @Test
@@ -147,7 +147,7 @@ public class ExtendedMethodsTest {
     when(queryResponse.getResults()).thenReturn(new ArrayList<>());
     Map<String, Object> idMap = getIdMap();
     Object resultObject = cloneMethod.apply(idMap);
-    assertThat(resultObject, instanceOf(Error.class));
+    assertThat(resultObject, instanceOf(ErrorImpl.class));
   }
 
   @Test
@@ -156,7 +156,7 @@ public class ExtendedMethodsTest {
     when(catalogFramework.create(any(CreateRequest.class))).thenThrow(IngestException.class);
     Map<String, Object> idMap = getIdMap();
     Object resultObject = cloneMethod.apply(idMap);
-    assertThat(resultObject, instanceOf(Error.class));
+    assertThat(resultObject, instanceOf(ErrorImpl.class));
   }
 
   @Test
@@ -166,7 +166,7 @@ public class ExtendedMethodsTest {
         .thenThrow(SourceUnavailableException.class);
     Map<String, Object> idMap = getIdMap();
     Object resultObject = cloneMethod.apply(idMap);
-    assertThat(resultObject, instanceOf(Error.class));
+    assertThat(resultObject, instanceOf(ErrorImpl.class));
   }
 
   @Test

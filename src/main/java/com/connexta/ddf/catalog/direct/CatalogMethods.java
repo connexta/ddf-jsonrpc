@@ -12,11 +12,10 @@ import static java.util.Collections.singletonMap;
 import com.connexta.ddf.persistence.subscriptions.SubscriptionMethods;
 import com.connexta.ddf.transformer.RpcListHandler;
 import com.connexta.jsonrpc.MethodSet;
+import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.RpcMethod;
-import com.connexta.jsonrpc.RpcMethodFactory;
-import com.connexta.jsonrpc.impl.Error;
 import com.connexta.jsonrpc.impl.JsonRpc;
-import com.connexta.jsonrpc.impl.RpcMethodFactoryImpl;
+import com.connexta.jsonrpc.impl.RpcFactoryImpl;
 import com.connexta.util.ImmutablePair;
 import ddf.action.Action;
 import ddf.action.ActionRegistry;
@@ -100,7 +99,7 @@ public class CatalogMethods implements MethodSet {
   //  private final transient SimpleDateFormat dateFormat = new
   // SimpleDateFormat(ISO_8601_DATE_FORMAT);
 
-  private final RpcMethodFactory methodFactory = new RpcMethodFactoryImpl();
+  private final RpcFactory rpc = new RpcFactoryImpl();
 
   private final Map<String, RpcMethod> METHODS;
 
@@ -108,7 +107,7 @@ public class CatalogMethods implements MethodSet {
     Map<String, RpcMethod> builder = new HashMap<>();
     builder.put(
         CREATE_KEY,
-        methodFactory.createMethod(
+        rpc.method(
             this::create,
             "Takes the specified parameters (metacards) and calls"
                 + " CatalogFramework::create.`params` takes: `metacards(Required, value:"
@@ -116,7 +115,7 @@ public class CatalogMethods implements MethodSet {
                 + " String))) "));
     builder.put(
         "ddf.catalog/query",
-        methodFactory.createMethod(
+        rpc.method(
             this::query,
             "Takes the specified parameters and calls CatalogFramework::query. `params` takes:"
                 + " `cql` (TemporarilyRequired, value: String of cql), `sourceIds` (Optional,"
@@ -128,20 +127,20 @@ public class CatalogMethods implements MethodSet {
 
     builder.put(
         "ddf.catalog/update",
-        methodFactory.createMethod(
+        rpc.method(
             this::update,
             "Takes the specified parameters and calls CatalogFramework::query. `params` takes:"
                 + " `metacards(Required, value: List(Object(`metacardType`:string,"
                 + " `attributes`:Object(Required, `id`: String)))"));
     builder.put(
         "ddf.catalog/delete",
-        methodFactory.createMethod(
+        rpc.method(
             this::delete,
             "Takes the specified parameters and calls CatalogFramework::query. `params` takes:"
                 + " `ids` (Required, value: List(String))"));
 
-    builder.put("ddf.catalog/getSourceIds", methodFactory.createMethod(this::getSourceIds, ""));
-    builder.put("ddf.catalog/getSourceInfo", methodFactory.createMethod(this::getSourceInfo, ""));
+    builder.put("ddf.catalog/getSourceIds", rpc.method(this::getSourceIds, ""));
+    builder.put("ddf.catalog/getSourceInfo", rpc.method(this::getSourceInfo, ""));
     METHODS = builder;
   }
 
@@ -193,13 +192,13 @@ public class CatalogMethods implements MethodSet {
     Object includeContentTypes = params.getOrDefault("includeContentTypes", false);
 
     if (!(includeContentTypes instanceof Boolean)) {
-      return new Error(INVALID_PARAMS, "missing param");
+      return rpc.error(INVALID_PARAMS, "missing param");
     }
 
     Object ids = params.get("ids");
 
     if (!(ids instanceof List)) {
-      return new Error(INVALID_PARAMS, "invalid ids param");
+      return rpc.error(INVALID_PARAMS, "invalid ids param");
     }
 
     SourceInfoRequestSources info =
@@ -208,13 +207,13 @@ public class CatalogMethods implements MethodSet {
     try {
       return singletonMap("sourceInfo", catalogFramework.getSourceInfo(info).getSourceInfo());
     } catch (SourceUnavailableException e) {
-      return new Error(INTERNAL_ERROR, e.getMessage());
+      return rpc.error(INTERNAL_ERROR, e.getMessage());
     }
   }
 
   private Object delete(Map<String, Object> params) {
     if (!(params.get("ids") instanceof List)) {
-      return new Error(INVALID_PARAMS, "ids not provided");
+      return rpc.error(INVALID_PARAMS, "ids not provided");
     }
     List<String> ids = (List<String>) params.get("ids");
 
@@ -222,7 +221,7 @@ public class CatalogMethods implements MethodSet {
     try {
       deleteResponse = catalogFramework.delete(new DeleteRequestImpl(ids.toArray(new String[] {})));
     } catch (IngestException | SourceUnavailableException e) {
-      return new Error(INTERNAL_ERROR, e.getMessage());
+      return rpc.error(INTERNAL_ERROR, e.getMessage());
     }
 
     return mapOf(
@@ -236,7 +235,7 @@ public class CatalogMethods implements MethodSet {
 
   private Object update(Map<String, Object> params) {
     if (!(params.get("metacards") instanceof List)) {
-      return new Error(INVALID_PARAMS, "params were not a map");
+      return rpc.error(INVALID_PARAMS, "params were not a map");
     }
     List<Map> metacards = (List<Map>) params.get("metacards");
 
@@ -245,13 +244,13 @@ public class CatalogMethods implements MethodSet {
       Map m = metacards.get(i);
       ImmutablePair<Metacard, String> res = map2Metacard(m);
       if (res.getRight() != null) {
-        return new Error(
+        return rpc.error(
             JsonRpc.PARSE_ERROR,
             res.getRight(),
             mapOf("irritant", m, "path", asList("params", "metacards", i)));
       }
       if (isBlank(res.getLeft().getId())) {
-        return new Error(
+        return rpc.error(
             INVALID_PARAMS,
             "id for metacard can not be blank/empty",
             mapOf("irritant", m, "path", asList("params", "metacards", i)));
@@ -269,7 +268,7 @@ public class CatalogMethods implements MethodSet {
     try {
       updateResponse = catalogFramework.update(new UpdateRequestImpl(ids, updateList));
     } catch (IngestException | SourceUnavailableException e) {
-      return new Error(INTERNAL_ERROR, e.getMessage());
+      return rpc.error(INTERNAL_ERROR, e.getMessage());
     }
 
     return mapOf(
@@ -282,9 +281,9 @@ public class CatalogMethods implements MethodSet {
             .collect(Collectors.toList()));
   }
 
-  private static Object getSortBy(Map<String, Object> rawSortPolicy) {
+  private Object getSortBy(Map<String, Object> rawSortPolicy) {
     if (!(rawSortPolicy.get("propertyName") instanceof String)) {
-      return new Error(
+      return rpc.error(
           INVALID_PARAMS,
           "propertyName was not a string or was missing",
           mapOf("irritant", asList("params", "sortPolicy", "propertyName")));
@@ -292,7 +291,7 @@ public class CatalogMethods implements MethodSet {
     String propertyName = (String) rawSortPolicy.get("propertyName");
 
     if (!(rawSortPolicy.get("sortOrder") instanceof String)) {
-      return new Error(
+      return rpc.error(
           INVALID_PARAMS,
           "sortOrder was not a string or was missing",
           mapOf("irritant", asList("params", "sortPolicy", "sortOrder")));
@@ -305,7 +304,7 @@ public class CatalogMethods implements MethodSet {
         || "desc".equalsIgnoreCase(sortOrderString)) {
       sortOrder = SortOrder.DESCENDING;
     } else {
-      return new Error(
+      return rpc.error(
           INVALID_PARAMS,
           "sortOrder was not asc[ending] or desc[ending]",
           mapOf("irritant", asList("params", "sortPolicy", "sortOrder")));
@@ -332,7 +331,7 @@ public class CatalogMethods implements MethodSet {
   private Object query(Map<String, Object> params) {
     Filter filter = null;
     if (params.containsKey("cql") && params.containsKey("query")) {
-      return new Error(INVALID_PARAMS, "cannot have both query and cql present");
+      return rpc.error(INVALID_PARAMS, "cannot have both query and cql present");
     }
 
     if (params.containsKey("cql")) {
@@ -340,12 +339,12 @@ public class CatalogMethods implements MethodSet {
       try {
         filter = ECQL.toFilter(cql);
       } catch (CQLException e) {
-        return new Error(INVALID_PARAMS, "could not parse cql", mapOf("cql", cql));
+        return rpc.error(INVALID_PARAMS, "could not parse cql", mapOf("cql", cql));
       }
     }
 
     if (params.containsKey("query")) {
-      return new Error(INVALID_PARAMS, "query is not supported yet");
+      return rpc.error(INVALID_PARAMS, "query is not supported yet");
       //    Map root = (Map) params.get("query");
       //    try {
       //    Filter filter = recur(root);
@@ -354,13 +353,13 @@ public class CatalogMethods implements MethodSet {
       //    }
     }
     if (filter == null) {
-      return new Error(INVALID_PARAMS, "params must have query or cql");
+      return rpc.error(INVALID_PARAMS, "params must have query or cql");
     }
 
     int startIndex = 1;
     if (params.containsKey("startIndex")) {
       if (!(params.get("startIndex") instanceof Number)) {
-        return new Error(
+        return rpc.error(
             INVALID_PARAMS,
             "startIndex was not a number",
             mapOf("irritant", params.get("startIndex"), "path", asList("params", "startIndex")));
@@ -372,7 +371,7 @@ public class CatalogMethods implements MethodSet {
     int pageSize = 200;
     if (params.containsKey("pageSize")) {
       if (!(params.get("pageSize") instanceof Number)) {
-        return new Error(
+        return rpc.error(
             INVALID_PARAMS,
             "pageSize was not a number",
             mapOf("irritant", asList("params", "pageSize")));
@@ -404,7 +403,7 @@ public class CatalogMethods implements MethodSet {
     List<String> sourceIds = new ArrayList<>();
     if (params.containsKey("sourceIds")) {
       if (!(params.get("sourceIds") instanceof List)) {
-        return new Error(
+        return rpc.error(
             JsonRpc.INVALID_PARAMS,
             "sourceIds was not a List",
             mapOf("path", asList("params", "sourceIds")));
@@ -428,7 +427,7 @@ public class CatalogMethods implements MethodSet {
 
     if (params.containsKey("facets")) {
       if (!(params.get("facets") instanceof Collection)) {
-        return new Error(
+        return rpc.error(
             JsonRpc.INVALID_PARAMS,
             "facets was not a Collection",
             mapOf("path", asList("params", "facets")));
@@ -445,7 +444,7 @@ public class CatalogMethods implements MethodSet {
     try {
       queryResponse = catalogFramework.query(queryRequest);
     } catch (UnsupportedQueryException | SourceUnavailableException | FederationException e) {
-      return new Error(
+      return rpc.error(
           INTERNAL_ERROR, "An error occured while running your query - " + e.getMessage());
     }
     List<String> workspaceSubscriptionIds =
@@ -561,7 +560,7 @@ public class CatalogMethods implements MethodSet {
 
   private Object create(Map<String, Object> params) {
     if (!(params.get("metacards") instanceof List)) {
-      return new Error(INVALID_PARAMS, "params were not a list");
+      return rpc.error(INVALID_PARAMS, "params were not a list");
     }
     List<Map> metacards = (List<Map>) params.get("metacards");
 
@@ -571,7 +570,7 @@ public class CatalogMethods implements MethodSet {
       Map m = metacards.get(i);
       ImmutablePair<Metacard, String> res = map2Metacard(m);
       if (res.getRight() != null) {
-        return new Error(
+        return rpc.error(
             JsonRpc.PARSE_ERROR,
             res.getRight(),
             mapOf("irritant", m, "path", asList("params", "metacards", i)));
@@ -585,7 +584,7 @@ public class CatalogMethods implements MethodSet {
     try {
       createResponse = catalogFramework.create(new CreateRequestImpl(createList));
     } catch (IngestException | SourceUnavailableException e) {
-      return new Error(INTERNAL_ERROR, e.getMessage());
+      return rpc.error(INTERNAL_ERROR, e.getMessage());
     }
 
     return mapOf(
