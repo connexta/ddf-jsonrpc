@@ -2,8 +2,10 @@ package com.connexta.jsonrpc.impl;
 
 import static com.connexta.util.MapFactory.mapOf;
 
+import com.connexta.jsonrpc.Error;
 import com.connexta.jsonrpc.Method;
 import com.connexta.jsonrpc.MethodSet;
+import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.RpcMethod;
 import java.time.Duration;
 import java.time.Instant;
@@ -30,6 +32,7 @@ public class JsonRpc implements Method {
   private static final String ID = "id";
   private static final String PARAMS = "params";
 
+  private final RpcFactory rpc = new RpcFactoryImpl();
   private final Map<String, RpcMethod> defaultMethods;
   private final Set<MethodSet> dynamicMethods = new HashSet<>();
   private Map<String, RpcMethod> methods = Collections.emptyMap();
@@ -79,34 +82,34 @@ public class JsonRpc implements Method {
     Duration duration = Duration.between(start, Instant.now());
     if (response instanceof Error) {
       Error error = (Error) response;
-      if (error.data instanceof Map) {
-        Map<Object, Object> builder = new HashMap<>((Map<Object, Object>) error.data);
+      if (error.getData() instanceof Map) {
+        Map<Object, Object> builder = new HashMap<>((Map<Object, Object>) error.getData());
         builder.put("request_duration_millis", duration.toMillis());
-        error = new Error(error.code, error.message, builder);
+        error = rpc.error(error.getCode(), error.getMessage(), builder);
       }
-      return new Response(error, id);
+      return rpc.response(error, id);
     } else if (response instanceof Map) {
       Map<Object, Object> updatedResponse = new HashMap<>((Map<Object, Object>) response);
       updatedResponse.put("request_duration_millis", duration.toMillis());
-      return new Response(updatedResponse, id);
+      return rpc.response(updatedResponse, id);
     } else {
-      return new Response(response, id);
+      return rpc.response(response, id);
     }
   }
 
   private Object dispatch(Map request) {
     if (request.get(ID) == null) {
-      return new Error(INVALID_REQUEST, "Missing/Invalid id");
+      return rpc.error(INVALID_REQUEST, "Missing/Invalid id");
     }
 
     if (!request.containsKey(METHOD)) {
-      return new Error(
+      return rpc.error(
           METHOD_NOT_FOUND,
           "Unknown method - use \"method\": \"list-methods\" to see available methods");
     }
 
     if (!(request.get(METHOD) instanceof String)) {
-      return new Error(
+      return rpc.error(
           METHOD_NOT_FOUND,
           "Unknown method - use \"method\": \"list-methods\" to see available methods");
     }
@@ -114,20 +117,20 @@ public class JsonRpc implements Method {
 
     RpcMethod target = methods.get(method);
     if (target == null) {
-      return new Error(
+      return rpc.error(
           METHOD_NOT_FOUND,
           "Unknown method - use \"method\": \"list-methods\" to see available methods");
     }
 
     if (!(request.get(PARAMS) instanceof Map)) {
-      return new Error(INVALID_PARAMS, "params were not a map");
+      return rpc.error(INVALID_PARAMS, "params were not a map");
     }
     Map<String, Object> params = (Map) request.get(PARAMS);
 
     try {
       return target.apply(params);
     } catch (RuntimeException e) {
-      return new Error(INTERNAL_ERROR, "Error occured - " + e.getMessage());
+      return rpc.error(INTERNAL_ERROR, "Error occured - " + e.getMessage());
     }
   }
 
