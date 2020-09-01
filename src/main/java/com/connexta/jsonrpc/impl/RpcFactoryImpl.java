@@ -36,6 +36,6 @@ public class RpcFactoryImpl implements RpcFactory {
 
   @Override
   public Response response(Object object, Object id) {
-    return null;
+    return new ResponseImpl(object, id);
   }
 }

@@ -52,7 +52,7 @@ import ddf.catalog.operation.impl.UpdateRequestImpl;
 import ddf.catalog.source.IngestException;
 import ddf.catalog.source.SourceUnavailableException;
 import ddf.catalog.source.UnsupportedQueryException;
-import ddf.security.SubjectUtils;
+import ddf.security.SubjectOperations;
 import java.io.Serializable;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -98,6 +98,8 @@ public class CatalogMethods implements MethodSet {
 
   //  private final transient SimpleDateFormat dateFormat = new
   // SimpleDateFormat(ISO_8601_DATE_FORMAT);
+
+  private final SubjectOperations subjectOperations;
 
   private final RpcFactory rpc = new RpcFactoryImpl();
 
@@ -173,7 +175,8 @@ public class CatalogMethods implements MethodSet {
       ActionRegistry actionRegistry,
       SubscriptionMethods subscription,
       MetacardMap metacardMap,
-      RpcListHandler listHandler) {
+      RpcListHandler listHandler,
+      SubjectOperations subjectOperations) {
     this.catalogFramework = catalogFramework;
     this.attributeRegistry = attributeRegistry;
     this.metacardTypes = metacardTypes;
@@ -182,6 +185,7 @@ public class CatalogMethods implements MethodSet {
     this.subscription = subscription;
     this.metacardMap = metacardMap;
     this.listHandler = listHandler;
+    this.subjectOperations = subjectOperations;
   }
 
   private Object getSourceIds(Map<String, Object> params) {
@@ -448,7 +452,8 @@ public class CatalogMethods implements MethodSet {
           INTERNAL_ERROR, "An error occured while running your query - " + e.getMessage());
     }
     List<String> workspaceSubscriptionIds =
-        subscription.getSubscriptions(SubjectUtils.getEmailAddress(SecurityUtils.getSubject()));
+        subscription.getSubscriptions(
+            subjectOperations.getEmailAddress(SecurityUtils.getSubject()));
     return mapOf(
         "results",
         getResults(queryResponse, workspaceSubscriptionIds),
