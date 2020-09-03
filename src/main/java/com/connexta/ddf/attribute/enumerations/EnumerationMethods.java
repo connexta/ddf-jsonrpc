@@ -18,14 +18,14 @@ public class EnumerationMethods implements MethodSet {
 
   private final Map<String, RpcMethod> METHODS;
 
-  private final RpcFactory methodFactory = new RpcFactoryImpl();
+  private final RpcFactory rpc = new RpcFactoryImpl();
 
   {
     Map<String, RpcMethod> builder = new HashMap<>();
-    builder.put("ddf.enumerations/all", methodFactory.method(this::getAllEnums, ""));
+    builder.put("ddf.enumerations/all", rpc.method(this::getAllEnums, ""));
     builder.put(
         "ddf.enumerations/by-type",
-        methodFactory.method(
+        rpc.method(
             this::getEnumsByType,
             "Takes the specified parameters and calls EnumerationExtractor::getEnumerations as many times"
                 + "as necessary. `params` takes: `types(Required, value:List(String))`"));
@@ -48,7 +48,7 @@ public class EnumerationMethods implements MethodSet {
   private Object getEnumsByType(Map<String, Object> params) {
     Object types = params.get("types");
     if (!(types instanceof List)) {
-      return methodFactory.error(INVALID_PARAMS, "invalid types param");
+      return rpc.error(INVALID_PARAMS, "invalid types param");
     }
 
     return mapOf("enumerations", getEnumsFromMetacardTypes((List<String>) types));
