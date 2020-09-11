@@ -5,10 +5,9 @@ import java.util.Collections;
 
 public class ErrorImpl implements Error {
 
-  public final int code;
-
-  public final String message;
-  public final Object data;
+  private final int code;
+  private final String message;
+  private final Object data;
 
   public ErrorImpl(int code, String message) {
     this(code, message, null);

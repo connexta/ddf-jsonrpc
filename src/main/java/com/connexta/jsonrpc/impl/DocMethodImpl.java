@@ -7,7 +7,7 @@ import java.util.Map;
 public class DocMethodImpl implements RpcMethod {
   private final Method method;
 
-  public final String docstring;
+  private final String docstring;
 
   public DocMethodImpl(Method method, String docstring) {
     this.method = method;

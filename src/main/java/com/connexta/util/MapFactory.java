@@ -23,7 +23,7 @@ public class MapFactory {
   }
 
   public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3) {
-    Map<K, V> map = new HashMap<>(2);
+    Map<K, V> map = new HashMap<>(3);
     map.put(k1, v1);
     map.put(k2, v2);
     map.put(k3, v3);
@@ -31,7 +31,7 @@ public class MapFactory {
   }
 
   public static <K, V> Map<K, V> mapOf(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
-    Map<K, V> map = new HashMap<>(2);
+    Map<K, V> map = new HashMap<>(4);
     map.put(k1, v1);
     map.put(k2, v2);
     map.put(k3, v3);

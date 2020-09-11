@@ -1,6 +1,6 @@
 package com.connexta.ddf.attribute.enumerations;
 
-import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
+import static com.connexta.jsonrpc.Error.INVALID_PARAMS;
 import static com.connexta.util.MapFactory.mapOf;
 
 import com.connexta.jsonrpc.MethodSet;
