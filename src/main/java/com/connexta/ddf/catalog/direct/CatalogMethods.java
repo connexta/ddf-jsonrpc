@@ -1,7 +1,7 @@
 package com.connexta.ddf.catalog.direct;
 
-import static com.connexta.jsonrpc.impl.JsonRpc.INTERNAL_ERROR;
-import static com.connexta.jsonrpc.impl.JsonRpc.INVALID_PARAMS;
+import static com.connexta.jsonrpc.Error.INTERNAL_ERROR;
+import static com.connexta.jsonrpc.Error.INVALID_PARAMS;
 import static com.connexta.util.ImmutablePair.pairOf;
 import static com.connexta.util.MapFactory.mapOf;
 import static com.connexta.util.StringUtils.isBlank;
@@ -11,10 +11,10 @@ import static java.util.Collections.singletonMap;
 
 import com.connexta.ddf.persistence.subscriptions.SubscriptionMethods;
 import com.connexta.ddf.transformer.RpcListHandler;
+import com.connexta.jsonrpc.Error;
 import com.connexta.jsonrpc.MethodSet;
 import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.RpcMethod;
-import com.connexta.jsonrpc.impl.JsonRpc;
 import com.connexta.jsonrpc.impl.RpcFactoryImpl;
 import com.connexta.util.ImmutablePair;
 import ddf.action.Action;
@@ -249,7 +249,7 @@ public class CatalogMethods implements MethodSet {
       ImmutablePair<Metacard, String> res = map2Metacard(m);
       if (res.getRight() != null) {
         return rpc.error(
-            JsonRpc.PARSE_ERROR,
+            Error.PARSE_ERROR,
             res.getRight(),
             mapOf("irritant", m, "path", asList("params", "metacards", i)));
       }
@@ -408,7 +408,7 @@ public class CatalogMethods implements MethodSet {
     if (params.containsKey("sourceIds")) {
       if (!(params.get("sourceIds") instanceof List)) {
         return rpc.error(
-            JsonRpc.INVALID_PARAMS,
+            Error.INVALID_PARAMS,
             "sourceIds was not a List",
             mapOf("path", asList("params", "sourceIds")));
       }
@@ -432,7 +432,7 @@ public class CatalogMethods implements MethodSet {
     if (params.containsKey("facets")) {
       if (!(params.get("facets") instanceof Collection)) {
         return rpc.error(
-            JsonRpc.INVALID_PARAMS,
+            Error.INVALID_PARAMS,
             "facets was not a Collection",
             mapOf("path", asList("params", "facets")));
       }
@@ -576,7 +576,7 @@ public class CatalogMethods implements MethodSet {
       ImmutablePair<Metacard, String> res = map2Metacard(m);
       if (res.getRight() != null) {
         return rpc.error(
-            JsonRpc.PARSE_ERROR,
+            Error.PARSE_ERROR,
             res.getRight(),
             mapOf("irritant", m, "path", asList("params", "metacards", i)));
       }

@@ -2,17 +2,19 @@ package com.connexta.jsonrpc.impl;
 
 import static com.connexta.jsonrpc.impl.JsonRpc.VERSION;
 
+import com.connexta.jsonrpc.Error;
 import com.connexta.jsonrpc.Response;
 
 public class ResponseImpl implements Response {
-  public final String jsonrpc = VERSION;
-  public final Object result;
+  private final Object result;
 
-  public final ErrorImpl error;
+  private final Error error;
 
-  public final Object id;
+  private final Object id;
 
-  public ResponseImpl(ErrorImpl error, Object id) {
+  private final String jsonrpc = VERSION;
+
+  public ResponseImpl(Error error, Object id) {
     this.result = null;
     this.error = error;
     this.id = id;
@@ -34,7 +36,7 @@ public class ResponseImpl implements Response {
   }
 
   @Override
-  public ErrorImpl getError() {
+  public Error getError() {
     return error;
   }
 

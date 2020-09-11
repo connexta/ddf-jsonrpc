@@ -29,12 +29,10 @@ public class RpcFactoryImpl implements RpcFactory {
     return new ErrorImpl(code, message, data);
   }
 
-  @Override
   public Response response(Error error, Object id) {
     return new ResponseImpl(error, id);
   }
 
-  @Override
   public Response response(Object object, Object id) {
     return new ResponseImpl(object, id);
   }

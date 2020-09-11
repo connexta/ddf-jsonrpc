@@ -33,7 +33,6 @@ public class JsonRpcHttpServlet extends HttpServlet {
     resp.setHeader("Content-Type", "application/json");
     Map<String, Object> request = mapOf("id", 0, "method", "list-methods", "params", mapOf());
     Object methods = method.apply(request);
-
     try (Writer writer = getWriter(req, resp)) {
       GSON.toJson(methods, writer);
     }
