@@ -63,8 +63,6 @@
     <argument ref="listHandler" />
   </bean>
 
-<!--  <reference id="subjectOperations" interface="ddf.security.SubjectOperations" />-->
-
   <bean id="catalogMethods" class="com.connexta.ddf.catalog.direct.CatalogMethods">
     <argument ref="catalogFramework"/>
     <argument ref="attributeRegistry"/>
@@ -74,10 +72,6 @@
     <argument ref="subscriptionMethods"/>
     <argument ref="metacardMap" />
     <argument ref="listHandler" />
-<!--    <argument ref="subjectOperations" />-->
-    <!--    <cm:managed-properties persistent-id="com.connexta.ddf.resourcemanagement.usage"-->
-    <!--      update-strategy="container-managed"/>-->
-    <!--    <property name="monitorLocalSources" value="false"/>-->
   </bean>
 
   <bean id="extendedMethods" class="com.connexta.ddf.catalog.direct.ExtendedMethods">

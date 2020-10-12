@@ -97,7 +97,7 @@ public class SubscriptionMethods implements MethodSet {
         ids.stream()
             .collect(
                 Collectors.toMap(Function.identity(), subscriptions::contains, (l, r) -> l || r));
-    return MapFactory.mapOf("isSubscribed", resultMap); // TODO (RCZ) - in progress
+    return MapFactory.mapOf("isSubscribed", resultMap); 
   }
 
   private List<Map<String, Object>> query(String email) throws PersistenceException {
