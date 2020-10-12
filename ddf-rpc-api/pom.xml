@@ -182,8 +182,6 @@
                             org.opengis.filter;version="[19.1.0,21.0.0)",
                             *
                         </Import-Package>
-<!--                        TODO (RCZ) - Ensure removing this doesn't break anything-->
-<!--                        <DynamicImport-Package>ddf.security, ddf.security.impl</DynamicImport-Package>-->
                     </instructions>
                 </configuration>
             </plugin>

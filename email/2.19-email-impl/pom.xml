@@ -47,15 +47,6 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Export-Package />
-
-<!--                        <Import-Package>-->
-<!--                            !com.google.common.util.concurrent.internal,-->
-<!--                            !com.google.errorprone.annotations.*,-->
-<!--                            !javax.annotation,-->
-<!--                            !org.checkerframework.checker.nullness.qual,-->
-<!--                            *-->
-<!--                        </Import-Package>-->
-<!--                        <DynamicImport-Package>ddf.security, ddf.security.impl</DynamicImport-Package>-->
                     </instructions>
                 </configuration>
             </plugin>
