@@ -235,7 +235,7 @@ public class CatalogMethods implements MethodSet {
 
   private Object update(Map<String, Object> params) {
     if (!(params.get("metacards") instanceof List)) {
-      return rpc.error(INVALID_PARAMS, "params were not a map");
+      return rpc.error(INVALID_PARAMS, "params were not a list");
     }
     List<Map> metacards = (List<Map>) params.get("metacards");
 

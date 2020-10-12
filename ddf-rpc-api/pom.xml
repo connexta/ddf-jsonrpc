@@ -141,30 +141,18 @@
                             platform-util,
                             log-sanitizer
                         </Embed-Dependency>
-                        <!--
-                        org.codice.ddf.log.sanitizer;version="[2.19,3)",
-                        -->
                         <Import-Package>
                             !com.google.common.util.concurrent.internal,
                             !com.google.errorprone.annotations.*,
                             !javax.annotation,
                             !org.checkerframework.checker.nullness.qual,
-                            org.opengis.annotation;version="[19.1.0,21.0.0)",
-                            org.opengis.filter;version="[19.1.0,21.0.0)",
-                            org.opengis.filter.sort;version="[19.1.0,21.0.0)",
-                            org.opengis.filter.expression;version="[19.1.0,21.0.0)",
-                            org.apache.commons.lang3;version="[3.8.0,4.0.0)",
-                            org.apache.commons.lang3.tuple;version="[3.8.0,4.0.0)",
-                            ddf.security;version="[2.19,3)",
-                            org.codice.ddf.configuration;version="[2.19,3)",
 
                             ddf.action.impl;version="[2.19,3)",
-                            ddf.catalog;version="[2.19,3)",
                             ddf.catalog.content.data;version="[2.19,3)",
                             ddf.catalog.content.operation;version="[2.19,3)",
-                            ddf.catalog.data;version="[2.19,3)",
-                            ddf.catalog.data.types;version="[2.19,3)",
                             ddf.catalog.data.types.experimental;version="[2.19,3)",
+                            ddf.catalog.data.types;version="[2.19,3)",
+                            ddf.catalog.data;version="[2.19,3)",
                             ddf.catalog.endpoint;version="[2.19,3)",
                             ddf.catalog.event;version="[2.19,3)",
                             ddf.catalog.federation;version="[2.19,3)",
@@ -176,14 +164,26 @@
                             ddf.catalog.source;version="[2.19,3)",
                             ddf.catalog.transform;version="[2.19,3)",
                             ddf.catalog.util;version="[2.19,3)",
-                            ddf.catalog.validation;version="[2.19,3)",
                             ddf.catalog.validation.report;version="[2.19,3)",
                             ddf.catalog.validation.violation;version="[2.19,3)",
-                            org.apache.shiro;version="[1.4.0,2.0.0)",
+                            ddf.catalog.validation;version="[2.19,3)",
+                            ddf.catalog;version="[2.19,3)",
+                            org.codice.ddf.configuration;version="[2.19,3)",
+
+                            org.apache.commons.lang3.tuple;version="[3.8.0,4.0.0)",
+                            org.apache.commons.lang3;version="[3.8.0,4.0.0)",
+
                             org.apache.shiro.subject;version="[1.4,2)",
+                            org.apache.shiro;version="[1.4.0,2.0.0)",
+
+                            org.opengis.annotation;version="[19.1.0,21.0.0)",
+                            org.opengis.filter.expression;version="[19.1.0,21.0.0)",
+                            org.opengis.filter.sort;version="[19.1.0,21.0.0)",
+                            org.opengis.filter;version="[19.1.0,21.0.0)",
                             *
                         </Import-Package>
-                        <DynamicImport-Package>ddf.security, ddf.security.impl</DynamicImport-Package>
+<!--                        TODO (RCZ) - Ensure removing this doesn't break anything-->
+<!--                        <DynamicImport-Package>ddf.security, ddf.security.impl</DynamicImport-Package>-->
                     </instructions>
                 </configuration>
             </plugin>

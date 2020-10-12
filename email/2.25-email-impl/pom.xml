@@ -10,19 +10,19 @@
         <version>0.5-SNAPSHOT</version>
     </parent>
 
-    <artifactId>2.26-email-impl</artifactId>
-    <name>Connexta :: JSON RPC :: Email :: 2.26 Email Impl</name>
+    <artifactId>2.25-email-impl</artifactId>
+    <name>Connexta :: JSON RPC :: Email :: 2.25 Email Impl</name>
     <packaging>bundle</packaging>
 
     <properties>
-        <ddf-2.26-version>2.26.0</ddf-2.26-version>
+        <ddf-2.25-version>2.25.0</ddf-2.25-version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>ddf.security.core</groupId>
             <artifactId>security-core-api</artifactId>
-            <version>${ddf-2.26-version}</version>
+            <version>${ddf-2.25-version}</version>
         </dependency>
         <dependency>
             <groupId>com.connexta.jsonrpc.email</groupId>

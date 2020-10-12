@@ -1,4 +1,4 @@
-package com.connexta.jsonrpc.email.impl.v_2_26;
+package com.connexta.jsonrpc.email.impl.v_2_25;
 
 import com.connexta.jsonrpc.email.EmailResolver;
 import ddf.security.SubjectOperations;
