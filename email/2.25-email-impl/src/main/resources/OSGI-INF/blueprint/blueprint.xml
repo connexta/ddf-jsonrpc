@@ -16,7 +16,7 @@
 
   <reference id="subjectOperations" interface="ddf.security.SubjectOperations"/>
 
-  <bean id="emailImpl" class="com.connexta.jsonrpc.email.impl.v_2_26.EmailImpl">
+  <bean id="emailImpl" class="com.connexta.jsonrpc.email.impl.v_2_25.EmailImpl">
     <argument ref="subjectOperations" />
   </bean>
 

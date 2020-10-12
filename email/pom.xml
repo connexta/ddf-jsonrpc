@@ -17,7 +17,7 @@
 
     <modules>
         <module>email-service</module>
-        <module>2.26-email-impl</module>
+        <module>2.25-email-impl</module>
         <module>2.19-email-impl</module>
     </modules>
 
