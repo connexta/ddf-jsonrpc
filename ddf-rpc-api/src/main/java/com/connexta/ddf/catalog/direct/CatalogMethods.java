@@ -38,11 +38,12 @@ import ddf.catalog.operation.FacetAttributeResult;
 import ddf.catalog.operation.FacetValueCount;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
+import ddf.catalog.operation.TermFacetProperties;
+import ddf.catalog.operation.TermFacetProperties.SortFacetsBy;
 import ddf.catalog.operation.Update;
 import ddf.catalog.operation.UpdateResponse;
 import ddf.catalog.operation.impl.CreateRequestImpl;
 import ddf.catalog.operation.impl.DeleteRequestImpl;
-import ddf.catalog.operation.impl.FacetedQueryRequest;
 import ddf.catalog.operation.impl.QueryImpl;
 import ddf.catalog.operation.impl.QueryRequestImpl;
 import ddf.catalog.operation.impl.SourceInfoRequestSources;
@@ -67,6 +68,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.geotools.filter.SortByImpl;
 import org.geotools.filter.text.cql2.CQLException;
@@ -312,21 +314,6 @@ public class CatalogMethods implements MethodSet {
     return sortPolicy;
   }
 
-  private Map getProperties(Map<String, Object> properties) {
-    Map<String, Object> result = new HashMap<>();
-    if (properties.containsKey("additional-sort-bys")) {
-      SortBy[] additionalSortBys =
-          (SortBy[])
-              ((List) properties.get("additional-sort-bys"))
-                  .stream()
-                  .map(sort -> getSortBy((Map) sort))
-                  .toArray(SortBy[]::new);
-      result.put("additional-sort-bys", additionalSortBys);
-    }
-
-    return result;
-  }
-
   /**
    * @param params
    * @return a Pair of (QueryRequest, Error), where one must be null
@@ -423,10 +410,30 @@ public class CatalogMethods implements MethodSet {
 
     Map<String, Serializable> properties = new HashMap<>();
     if (params.containsKey("properties")) {
-      properties = getProperties((Map) params.get("properties"));
-    }
-    QueryResponse queryResponse;
+      // For now -- only support a hardcoded key of facets/sort. This could be changed to support
+      // generic
+      //   properties in the future but would need to consider security aspects first.
 
+      Map<String, Object> paramProperties = (Map<String, Object>) params.get("properties");
+
+      if (properties.containsKey("additional-sort-bys")) {
+        SortBy[] additionalSortBys =
+            (SortBy[])
+                ((List) properties.get("additional-sort-bys"))
+                    .stream()
+                    .map(sort -> getSortBy((Map) sort))
+                    .toArray(SortBy[]::new);
+        properties.put("additional-sort-bys", additionalSortBys);
+      }
+
+      if (paramProperties.containsKey("facets")) {
+        ImmutablePair<TermFacetProperties, Error> facetOrError = getFacetTerm(paramProperties);
+        if (facetOrError.getRight() != null) {
+          return pairOf(null, facetOrError.getRight());
+        }
+        properties.put("facet-properties", facetOrError.getLeft());
+      }
+    }
     QueryRequestImpl queryRequest =
         new QueryRequestImpl(
             new QueryImpl(
@@ -435,24 +442,6 @@ public class CatalogMethods implements MethodSet {
             sourceIds,
             properties);
 
-    if (params.containsKey("facets")) {
-      if (!(params.get("facets") instanceof Collection)) {
-        return pairOf(
-            null,
-            rpc.error(
-                Error.INVALID_PARAMS,
-                "facets was not a Collection",
-                mapOf("path", asList("params", "facets"))));
-      }
-
-      queryRequest =
-          new FacetedQueryRequest(
-              queryRequest.getQuery(),
-              queryRequest.isEnterprise(),
-              queryRequest.getSourceIds(),
-              queryRequest.getProperties(),
-              new TermFacetPropertiesImpl(new HashSet((Collection) params.get("facets"))));
-    }
     return pairOf(queryRequest, null);
   }
 
@@ -704,6 +693,62 @@ public class CatalogMethods implements MethodSet {
   private Date parseDate(Serializable date) {
     TemporalAccessor temporalAccessor = DATE_FORMATTER.parse(date.toString());
     return new Date(ZonedDateTime.from(temporalAccessor).toInstant().toEpochMilli());
+  }
+
+  private ImmutablePair<TermFacetProperties, Error> getFacetTerm(
+      Map<String, Object> paramProperties) {
+    Map<String, Object> facets = (Map<String, Object>) paramProperties.get("facets");
+
+    if (!(facets.get("facetAttributes") instanceof Collection)
+        || ((Collection) facets.get("facetAttributes")).isEmpty()) {
+      return pairOf(
+          null,
+          rpc.error(
+              Error.INVALID_PARAMS,
+              "facetAttributes was not a Collection with at least one attribute",
+              mapOf(
+                  "path",
+                  asList("params", "properties", "facets", "facetAttributes"),
+                  "irritant",
+                  facets.get("facetAttributes"))));
+    }
+    Set<String> facetAttributes = new HashSet<>((Collection) facets.get("facetAttributes"));
+
+    SortFacetsBy sortKey = SortFacetsBy.COUNT;
+    if (facets.containsKey("sortKey") && facets.get("sortKey") instanceof String) {
+      String sortKeyString = (String) facets.get("sortKey");
+      if (sortKeyString.equalsIgnoreCase("INDEX")) {
+        sortKey = SortFacetsBy.INDEX;
+      } else if (sortKeyString.equalsIgnoreCase("COUNT")) {
+        sortKey = SortFacetsBy.COUNT;
+      } else {
+        return pairOf(
+            null,
+            rpc.error(
+                Error.INVALID_PARAMS,
+                "sortKey was not a String of `INDEX` or `COUNT`",
+                mapOf(
+                    "path",
+                    asList("params", "properties", "facets", "sortKey"),
+                    "irritant",
+                    facets.get("sortKey"))));
+      }
+    }
+
+    int facetLimit = 100;
+    if (facets.containsKey("facetLimit") && facets.get("facetLimit") instanceof Integer) {
+      // TODO (RCZ) - For these checks, do we want to modify the above logic to also return an error
+      //  if its not an integer/string/etc - as opposed to now returning the default silently
+      facetLimit = (Integer) facets.get("facetLimit");
+    }
+
+    int minFacetCount = 1;
+    if (facets.containsKey("minFacetCount") && facets.get("minFacetCount") instanceof Integer) {
+      minFacetCount = (Integer) facets.get("minFacetCount");
+    }
+
+    return pairOf(
+        new TermFacetPropertiesImpl(facetAttributes, sortKey, facetLimit, minFacetCount), null);
   }
 
   private static class FilterTreeParseException extends RuntimeException {
