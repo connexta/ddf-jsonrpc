@@ -17,9 +17,7 @@ import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.RpcMethod;
 import com.connexta.jsonrpc.impl.RpcFactoryImpl;
 import com.connexta.util.ImmutablePair;
-import ddf.action.Action;
 import ddf.action.ActionRegistry;
-import ddf.action.impl.ActionImpl;
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Attribute;
 import ddf.catalog.data.AttributeDescriptor;
@@ -38,6 +36,7 @@ import ddf.catalog.operation.CreateResponse;
 import ddf.catalog.operation.DeleteResponse;
 import ddf.catalog.operation.FacetAttributeResult;
 import ddf.catalog.operation.FacetValueCount;
+import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.Update;
 import ddf.catalog.operation.UpdateResponse;
@@ -328,10 +327,14 @@ public class CatalogMethods implements MethodSet {
     return result;
   }
 
-  private Object query(Map<String, Object> params) {
+  /**
+   * @param params
+   * @return a Pair of (QueryRequest, Error), where one must be null
+   */
+  public ImmutablePair<QueryRequest, Error> getQueryRequest(Map<String, Object> params) {
     Filter filter = null;
     if (params.containsKey("cql") && params.containsKey("query")) {
-      return rpc.error(INVALID_PARAMS, "cannot have both query and cql present");
+      return pairOf(null, rpc.error(INVALID_PARAMS, "cannot have both query and cql present"));
     }
 
     if (params.containsKey("cql")) {
@@ -339,12 +342,12 @@ public class CatalogMethods implements MethodSet {
       try {
         filter = ECQL.toFilter(cql);
       } catch (CQLException e) {
-        return rpc.error(INVALID_PARAMS, "could not parse cql", mapOf("cql", cql));
+        return pairOf(null, rpc.error(INVALID_PARAMS, "could not parse cql", mapOf("cql", cql)));
       }
     }
 
     if (params.containsKey("query")) {
-      return rpc.error(INVALID_PARAMS, "query is not supported yet");
+      return pairOf(null, rpc.error(INVALID_PARAMS, "query is not supported yet"));
       //    Map root = (Map) params.get("query");
       //    try {
       //    Filter filter = recur(root);
@@ -353,16 +356,19 @@ public class CatalogMethods implements MethodSet {
       //    }
     }
     if (filter == null) {
-      return rpc.error(INVALID_PARAMS, "params must have query or cql");
+      return pairOf(null, rpc.error(INVALID_PARAMS, "params must have query or cql"));
     }
 
     int startIndex = 1;
     if (params.containsKey("startIndex")) {
       if (!(params.get("startIndex") instanceof Number)) {
-        return rpc.error(
-            INVALID_PARAMS,
-            "startIndex was not a number",
-            mapOf("irritant", params.get("startIndex"), "path", asList("params", "startIndex")));
+        return pairOf(
+            null,
+            rpc.error(
+                INVALID_PARAMS,
+                "startIndex was not a number",
+                mapOf(
+                    "irritant", params.get("startIndex"), "path", asList("params", "startIndex"))));
       }
 
       startIndex = ((Number) params.get("startIndex")).intValue();
@@ -371,10 +377,12 @@ public class CatalogMethods implements MethodSet {
     int pageSize = 200;
     if (params.containsKey("pageSize")) {
       if (!(params.get("pageSize") instanceof Number)) {
-        return rpc.error(
-            INVALID_PARAMS,
-            "pageSize was not a number",
-            mapOf("irritant", asList("params", "pageSize")));
+        return pairOf(
+            null,
+            rpc.error(
+                INVALID_PARAMS,
+                "pageSize was not a number",
+                mapOf("irritant", asList("params", "pageSize"))));
       }
 
       pageSize = ((Number) params.get("pageSize")).intValue();
@@ -403,10 +411,12 @@ public class CatalogMethods implements MethodSet {
     List<String> sourceIds = new ArrayList<>();
     if (params.containsKey("sourceIds")) {
       if (!(params.get("sourceIds") instanceof List)) {
-        return rpc.error(
-            Error.INVALID_PARAMS,
-            "sourceIds was not a List",
-            mapOf("path", asList("params", "sourceIds")));
+        return pairOf(
+            null,
+            rpc.error(
+                Error.INVALID_PARAMS,
+                "sourceIds was not a List",
+                mapOf("path", asList("params", "sourceIds"))));
       }
       sourceIds = (List<String>) params.get("sourceIds");
     }
@@ -427,10 +437,12 @@ public class CatalogMethods implements MethodSet {
 
     if (params.containsKey("facets")) {
       if (!(params.get("facets") instanceof Collection)) {
-        return rpc.error(
-            Error.INVALID_PARAMS,
-            "facets was not a Collection",
-            mapOf("path", asList("params", "facets")));
+        return pairOf(
+            null,
+            rpc.error(
+                Error.INVALID_PARAMS,
+                "facets was not a Collection",
+                mapOf("path", asList("params", "facets"))));
       }
 
       queryRequest =
@@ -441,11 +453,21 @@ public class CatalogMethods implements MethodSet {
               queryRequest.getProperties(),
               new TermFacetPropertiesImpl(new HashSet((Collection) params.get("facets"))));
     }
+    return pairOf(queryRequest, null);
+  }
+
+  public Object query(Map<String, Object> params) {
+    ImmutablePair<QueryRequest, Error> queryOrError = getQueryRequest(params);
+    if (queryOrError.getRight() != null) {
+      return queryOrError.getRight();
+    }
+
+    QueryResponse queryResponse;
     try {
-      queryResponse = catalogFramework.query(queryRequest);
+      queryResponse = catalogFramework.query(queryOrError.getLeft());
     } catch (UnsupportedQueryException | SourceUnavailableException | FederationException e) {
       return rpc.error(
-          INTERNAL_ERROR, "An error occured while running your query - " + e.getMessage());
+          INTERNAL_ERROR, "An error occurred while running your query - " + e.getMessage());
     }
     return mapOf(
         "results",
@@ -462,30 +484,13 @@ public class CatalogMethods implements MethodSet {
     return ids.contains(metacard.getId());
   }
 
-  private List<Action> getMetacardActions(Metacard metacard) {
-    return this.actionRegistry
-        .list(metacard)
-        .stream()
-        .map(
-            action ->
-                new ActionImpl(
-                    action.getId(), action.getTitle(), action.getDescription(), action.getUrl()))
-        .collect(Collectors.toList());
-  }
-
   private boolean isWorkspace(Metacard metacard) {
     return metacard.getAttribute("metacard-tags") != null
         && metacard.getAttribute("metacard-tags").getValues().contains("workspace");
   }
 
   private Map<String, Object> getMetacardInfo(Metacard metacard) {
-    return isWorkspace(metacard)
-        ? mapOf(
-            "metacard", metacardMap.convert(metacard),
-            "actions", getMetacardActions(metacard))
-        : mapOf(
-            "metacard", metacardMap.convert(metacard),
-            "actions", getMetacardActions(metacard));
+    return mapOf("metacard", metacardMap.convert(metacard));
   }
 
   private List<Object> getResults(QueryResponse queryResponse) {
