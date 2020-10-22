@@ -406,7 +406,7 @@ public class CatalogMethods implements MethodSet {
 
     // TODO (RCZ) - Not configurable for now. Is this safe to let clients config?
     // TODO (RCZ) - What should the default timeout be?
-    long timeoutMillis = 0;
+    long timeoutMillis = 60_000;
 
     boolean isEnterprise = false;
     if (params.containsKey("isEnterprise")) {
