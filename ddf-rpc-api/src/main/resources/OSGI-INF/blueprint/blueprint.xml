@@ -92,14 +92,21 @@
     </property>
   </bean>
 
-  <bean id="jsonRpc" class="com.connexta.jsonrpc.impl.JsonRpc" >
+  <bean id="platformMethods" class="com.connexta.ddf.platform.direct.PlatformMethods">
+    <argument ref="catalogFramework" />
+    <argument ref="metacardActionRegistry"/>
+    <argument ref="catalogMethods" />
+    <argument ref="filterBuilder" />
+  </bean>
 
+  <bean id="jsonRpc" class="com.connexta.jsonrpc.impl.JsonRpc" >
     <argument>
       <list>
         <ref component-id="catalogMethods"/>
         <ref component-id="extendedMethods"/>
         <ref component-id="enumerationMethods"/>
         <ref component-id="subscriptionMethods"/>
+        <ref component-id="platformMethods"/>
       </list>
     </argument>
 
