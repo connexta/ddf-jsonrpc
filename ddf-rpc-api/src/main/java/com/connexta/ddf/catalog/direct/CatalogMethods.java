@@ -26,9 +26,7 @@ import ddf.catalog.data.AttributeRegistry;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.MetacardType;
 import ddf.catalog.data.Result;
-import ddf.catalog.data.impl.AttributeDescriptorImpl;
 import ddf.catalog.data.impl.AttributeImpl;
-import ddf.catalog.data.impl.BasicTypes;
 import ddf.catalog.data.impl.MetacardImpl;
 import ddf.catalog.federation.FederationException;
 import ddf.catalog.filter.FilterBuilder;
@@ -647,17 +645,144 @@ public class CatalogMethods implements MethodSet {
 
   private ImmutablePair<Attribute, String> getAttribute(String name, Object value) {
 
-    AttributeDescriptor ad =
-        attributeRegistry
-            .lookup(name)
-            .orElseGet(
-                () ->
-                    new AttributeDescriptorImpl(
-                        name, true, true, false, true, BasicTypes.STRING_TYPE));
+    AttributeDescriptor ad = attributeRegistry.lookup(name).orElse(null);
+    // TODO (RCZ) - I'm proposing removing this orElseGet to create a new string attribute
+    //  descriptor
+    //  in the case that one cant be found. This silent behavior will make your thing stored, but
+    //  may result in confusion on why its a string. i would propose that we do what the catalog
+    //  framework does by default which is not storing that attribute.
+    //            .orElseGet(
+    //                () ->
+    //                    new AttributeDescriptorImpl(
+    //                        name, true, true, false, false, BasicTypes.STRING_TYPE));
 
+    if (ad == null) {
+      return pairOf(new AttributeImpl(name, (Serializable) null), null);
+    }
     if (value == null) {
       return pairOf(new AttributeImpl(name, (Serializable) null), null);
     }
+
+    if (ad.isMultiValued()) {
+      List<Object> values;
+      if (value instanceof List) {
+        values = (List<Object>) value;
+      } else {
+        values = Collections.singletonList(value);
+      }
+      switch (ad.getType().getAttributeFormat()) {
+        case BINARY:
+          return pairOf(
+              new AttributeImpl(
+                  name,
+                  values
+                      .stream()
+                      .map(v -> Base64.getDecoder().decode((String) v))
+                      .collect(Collectors.toList())),
+              null);
+        case DATE:
+          try {
+            return pairOf(
+                new AttributeImpl(
+                    name,
+                    values.stream().map(v -> parseDate(v.toString())).collect(Collectors.toList())),
+                null);
+          } catch (DateTimeParseException e) {
+            return pairOf(
+                null,
+                String.format(
+                    "Could not parse '%s' as iso8601 string".format(String.valueOf(value))));
+          }
+        case BOOLEAN:
+          return pairOf(
+              new AttributeImpl(
+                  name,
+                  values
+                      .stream()
+                      .map(v -> Boolean.parseBoolean(v.toString()))
+                      .collect(Collectors.toList())),
+              null);
+        case SHORT:
+          try {
+            return pairOf(
+                new AttributeImpl(
+                    name,
+                    values
+                        .stream()
+                        .map(v -> Short.parseShort(v.toString()))
+                        .collect(Collectors.toList())),
+                null);
+          } catch (NumberFormatException e) {
+            return pairOf(
+                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+          }
+        case INTEGER:
+          try {
+            return pairOf(
+                new AttributeImpl(
+                    name,
+                    values
+                        .stream()
+                        .map(v -> Integer.parseInt(v.toString()))
+                        .collect(Collectors.toList())),
+                null);
+          } catch (NumberFormatException e) {
+            return pairOf(
+                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+          }
+        case LONG:
+          try {
+            return pairOf(
+                new AttributeImpl(
+                    name,
+                    values
+                        .stream()
+                        .map(v -> Long.parseLong(v.toString()))
+                        .collect(Collectors.toList())),
+                null);
+          } catch (NumberFormatException e) {
+            return pairOf(
+                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+          }
+        case FLOAT:
+          try {
+            return pairOf(
+                new AttributeImpl(
+                    name,
+                    values
+                        .stream()
+                        .map(v -> Float.parseFloat(v.toString()))
+                        .collect(Collectors.toList())),
+                null);
+          } catch (NumberFormatException e) {
+            return pairOf(
+                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+          }
+        case DOUBLE:
+          try {
+            return pairOf(
+                new AttributeImpl(
+                    name,
+                    values
+                        .stream()
+                        .map(v -> Double.parseDouble(v.toString()))
+                        .collect(Collectors.toList())),
+                null);
+          } catch (NumberFormatException e) {
+            return pairOf(
+                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+          }
+        case GEOMETRY:
+        case STRING:
+        case XML:
+        default:
+          return pairOf(
+              new AttributeImpl(
+                  name, values.stream().map(Object::toString).collect(Collectors.toList())),
+              null);
+      }
+    }
+    // ad was not multivalued, so only do single value
     switch (ad.getType().getAttributeFormat()) {
       case BINARY:
         return pairOf(new AttributeImpl(name, Base64.getDecoder().decode((String) value)), null);
@@ -673,9 +798,7 @@ public class CatalogMethods implements MethodSet {
       case GEOMETRY:
       case STRING:
       case XML:
-        return value instanceof List
-            ? pairOf(new AttributeImpl(name, ((List) value)), null)
-            : pairOf(new AttributeImpl(name, value.toString()), null);
+        return pairOf(new AttributeImpl(name, value.toString()), null);
       case BOOLEAN:
         return pairOf(new AttributeImpl(name, Boolean.parseBoolean(value.toString())), null);
       case SHORT:
