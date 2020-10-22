@@ -17,6 +17,7 @@ import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.RpcMethod;
 import com.connexta.jsonrpc.impl.RpcFactoryImpl;
 import com.connexta.util.ImmutablePair;
+import com.connexta.util.StringUtils;
 import ddf.action.ActionRegistry;
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.Attribute;
@@ -59,6 +60,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collection;
 import java.util.Collections;
@@ -93,6 +95,10 @@ public class CatalogMethods implements MethodSet {
 
   private static final DateTimeFormatter DATE_FORMATTER =
       DateTimeFormatter.ofPattern(ISO_8601_DATE_STRING).withZone(ZoneOffset.UTC);
+
+  private final boolean blocklistDisabled;
+
+  private final List<String> blocklist;
 
   public static final String ATTRIBUTES = "attributes";
 
@@ -183,6 +189,20 @@ public class CatalogMethods implements MethodSet {
     this.subscription = subscription;
     this.metacardMap = metacardMap;
     this.listHandler = listHandler;
+
+    String blocklistDisabledString =
+        System.getProperty("com.connexta.ddf-jsonrpc.return-property-blocklist-disable", "false");
+    blocklistDisabled = Boolean.parseBoolean(blocklistDisabledString);
+
+    String blocklistString =
+        System.getProperty(
+            "com.connexta.ddf-jsonrpc.return-property-blocklist",
+            "operation.security, actualResultSize");
+    blocklist =
+        Arrays.stream(blocklistString.split(","))
+            .map(String::trim)
+            .filter(str -> !StringUtils.isBlank(str))
+            .collect(Collectors.toList());
   }
 
   private Object getSourceIds(Map<String, Object> params) {
@@ -466,7 +486,15 @@ public class CatalogMethods implements MethodSet {
         "facets",
         getFacetResults(queryResponse.getPropertyValue(EXPERIMENTAL_FACET_RESULTS_KEY)),
         "properties",
-        queryResponse.getProperties());
+        blockSensitive(queryResponse.getProperties()));
+  }
+
+  private Map<String, Serializable> blockSensitive(Map<String, Serializable> properties) {
+    if (blocklistDisabled) {
+      return properties;
+    }
+    blocklist.forEach(properties::remove);
+    return properties;
   }
 
   private boolean isSubscribed(Metacard metacard, List<String> ids) {
