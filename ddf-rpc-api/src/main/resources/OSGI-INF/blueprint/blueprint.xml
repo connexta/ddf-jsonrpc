@@ -99,6 +99,14 @@
     <argument ref="filterBuilder" />
   </bean>
 
+  <reference-list id="injectableAttributes" interface="ddf.catalog.data.InjectableAttribute" availability="optional" />
+
+  <bean id="metacardTypeMethods" class="com.connexta.ddf.catalog.direct.MetacardTypeMethods">
+    <argument ref="injectableAttributes" />
+    <argument ref="attributeRegistry"/>
+    <argument ref="metacardTypes" />
+  </bean>
+
   <bean id="jsonRpc" class="com.connexta.jsonrpc.impl.JsonRpc" >
     <argument>
       <list>
@@ -107,6 +115,7 @@
         <ref component-id="enumerationMethods"/>
         <ref component-id="subscriptionMethods"/>
         <ref component-id="platformMethods"/>
+        <ref component-id="metacardTypeMethods"/>
       </list>
     </argument>
 
