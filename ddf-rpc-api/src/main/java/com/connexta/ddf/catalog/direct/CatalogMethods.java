@@ -529,7 +529,6 @@ public class CatalogMethods implements MethodSet {
                 (a, b) -> b));
   }
 
-
   private Object create(Map<String, Object> params) {
     if (!(params.get("metacards") instanceof List)) {
       return rpc.error(INVALID_PARAMS, "params were not a list");
@@ -549,7 +548,6 @@ public class CatalogMethods implements MethodSet {
       }
       createList.add(res.getLeft());
     }
-
 
     CreateResponse createResponse;
     try {
