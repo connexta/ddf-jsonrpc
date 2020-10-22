@@ -495,15 +495,6 @@ public class CatalogMethods implements MethodSet {
     return properties;
   }
 
-  private boolean isSubscribed(Metacard metacard, List<String> ids) {
-    return ids.contains(metacard.getId());
-  }
-
-  private boolean isWorkspace(Metacard metacard) {
-    return metacard.getAttribute("metacard-tags") != null
-        && metacard.getAttribute("metacard-tags").getValues().contains("workspace");
-  }
-
   private Map<String, Object> getMetacardInfo(Metacard metacard) {
     return mapOf("metacard", metacardMap.convert(metacard));
   }
@@ -538,40 +529,6 @@ public class CatalogMethods implements MethodSet {
                 (a, b) -> b));
   }
 
-  //  private Filter recur(Map tree) throws FilterTreeParseException {
-  //    String type = (String) tree.get("type");
-  //
-  //    // recursive types
-  //    if ("AND".equals(type)) {
-  //      List<Map> filters = (List) tree.get("filters");
-  //      if (filters.size() != 1) {
-  //        throw new FilterTreeParseException();
-  //      }
-  //      return
-  // filterBuilder.allOf(filters.stream().map(this::recur).collect(Collectors.toList()));
-  //    } else if ("OR".equals(type)) {
-  //      List<Map> filters = (List) tree.get("filters");
-  //      if (filters.size() != 1) {
-  //        throw new FilterTreeParseException();
-  //      }
-  //      return
-  // filterBuilder.anyOf(filters.stream().map(this::recur).collect(Collectors.toList()));
-  //
-  //    } else if ("NOT".equals(type)) {
-  //      List<Map> filters = (List) tree.get("filters");
-  //      if (filters.size() != 1) {
-  //        throw new FilterTreeParseException();
-  //      }
-  //      return filterBuilder.not(recur(filters.get(0)));
-  //    }
-  //
-  //    // literal types
-  //    if ("equalTo".equals(type) || "=".equals(type)) {
-  //      String property = (String) tree.get("property");
-  //      Object value = tree.get("value");
-  //      return filterBuilder.attribute(property).equalTo();
-  //    }
-  //  }
 
   private Object create(Map<String, Object> params) {
     if (!(params.get("metacards") instanceof List)) {
@@ -593,8 +550,7 @@ public class CatalogMethods implements MethodSet {
       createList.add(res.getLeft());
     }
 
-    // TODO (RCZ) - No properties until we have a white/blacklist so you can't sneak in security
-    // attributes
+
     CreateResponse createResponse;
     try {
       createResponse = catalogFramework.create(new CreateRequestImpl(createList));
