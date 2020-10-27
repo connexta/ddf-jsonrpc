@@ -33,11 +33,15 @@
     <argument ref="metacardMultiActionProviders"/>
   </bean>
 
+  <bean id="rpcFactory" class="com.connexta.jsonrpc.impl.RpcFactoryImpl" />
+
   <reference id="emailResolver" interface="com.connexta.jsonrpc.email.EmailResolver" />
 
   <bean id="subscriptionMethods" class="com.connexta.ddf.persistence.subscriptions.SubscriptionMethods">
     <argument ref="persistentStore"/>
     <argument ref="emailResolver" />
+    <argument ref="rpcFactory" />
+
   </bean>
   
   <reference id="defaultAttributeValidatorRegistry" interface="ddf.catalog.validation.AttributeValidatorRegistry" availability="optional"/>

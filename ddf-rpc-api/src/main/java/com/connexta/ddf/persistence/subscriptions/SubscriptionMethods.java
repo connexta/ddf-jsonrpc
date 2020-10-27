@@ -5,7 +5,6 @@ import com.connexta.jsonrpc.MethodSet;
 import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.RpcMethod;
 import com.connexta.jsonrpc.email.EmailResolver;
-import com.connexta.jsonrpc.impl.RpcFactoryImpl;
 import com.connexta.util.MapFactory;
 import java.util.Collections;
 import java.util.HashMap;
@@ -46,11 +45,16 @@ public class SubscriptionMethods implements MethodSet {
 
   private final EmailResolver emailResolver;
 
-  private final Map<String, RpcMethod> METHODS;
+  private final Map<String, RpcMethod> methods;
 
-  private final RpcFactory rpc = new RpcFactoryImpl();
+  private final RpcFactory rpc;
 
-  {
+  public SubscriptionMethods(
+      PersistentStore persistentStore, EmailResolver emailResolver, RpcFactory rpcFactory) {
+    this.persistentStore = persistentStore;
+    this.emailResolver = emailResolver;
+    this.rpc = rpcFactory;
+
     Map<String, RpcMethod> builder = new HashMap<>();
     builder.put(
         "subscriptions/isSubscribed",
@@ -60,12 +64,7 @@ public class SubscriptionMethods implements MethodSet {
     builder.put(
         "subscriptions/getAll",
         rpc.method(this::getAllSubscriptions, "Gets all subscriptions for current user."));
-    METHODS = builder;
-  }
-
-  public SubscriptionMethods(PersistentStore persistentStore, EmailResolver emailResolver) {
-    this.persistentStore = persistentStore;
-    this.emailResolver = emailResolver;
+    methods = builder;
   }
 
   public Object getAllSubscriptions(Map<String, Object> params) {
@@ -140,6 +139,6 @@ public class SubscriptionMethods implements MethodSet {
 
   @Override
   public Map<String, RpcMethod> getMethods() {
-    return METHODS;
+    return methods;
   }
 }
