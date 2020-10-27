@@ -504,7 +504,7 @@ public class CatalogMethods implements MethodSet {
         .getResults()
         .stream()
         .map(Result::getMetacard)
-        .map(metacard -> getMetacardInfo(metacard))
+        .map(this::getMetacardInfo)
         .collect(Collectors.toList());
   }
 
