@@ -74,7 +74,7 @@ public class SubscriptionMethods implements MethodSet {
 
   public Object getSubscriptions(Map<String, Object> params) {
 
-    if (!params.containsKey(IDS) || !(params.get(IDS) instanceof List)) {
+    if (!(params.get(IDS) instanceof List)) {
       return rpc.error(
           Error.INVALID_PARAMS,
           "Did not have a key `ids` that was a list of ids",
@@ -103,9 +103,7 @@ public class SubscriptionMethods implements MethodSet {
     String queryableEmail = "\"" + EMAIL_PROPERTY + "\"=" + "'" + email + "'";
     LOCK.lock();
     try {
-      List<Map<String, Object>> results =
-          persistentStore.get(SUBSCRIPTION_TYPE, queryableEmail, START_INDEX, PAGE_SIZE);
-      return results;
+      return persistentStore.get(SUBSCRIPTION_TYPE, queryableEmail, START_INDEX, PAGE_SIZE);
     } finally {
       LOCK.unlock();
     }
