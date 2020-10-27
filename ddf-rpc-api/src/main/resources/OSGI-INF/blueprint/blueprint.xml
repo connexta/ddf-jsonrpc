@@ -41,7 +41,6 @@
     <argument ref="persistentStore"/>
     <argument ref="emailResolver" />
     <argument ref="rpcFactory" />
-
   </bean>
   
   <reference id="defaultAttributeValidatorRegistry" interface="ddf.catalog.validation.AttributeValidatorRegistry" availability="optional"/>
