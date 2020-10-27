@@ -7,7 +7,9 @@ import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.email.EmailResolver;
+import com.connexta.jsonrpc.impl.RpcFactoryImpl;
 import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +27,8 @@ public class SubscriptionMethodsTest {
 
   private static List<Map<String, Object>> testSubscriptions;
 
+  RpcFactory rpcFactory = new RpcFactoryImpl();
+
   @Mock private PersistentStore persistentStore;
 
   @Mock private EmailResolver emailResolver;
@@ -36,7 +40,7 @@ public class SubscriptionMethodsTest {
   public void setUp() throws Exception {
     testSubscriptions = new ArrayList<>();
     initMocks(this);
-    testSubscription = new SubscriptionMethods(persistentStore, emailResolver);
+    testSubscription = new SubscriptionMethods(persistentStore, emailResolver, rpcFactory);
     for (int i = 0; i < 6; i++) {
       testSubscriptions.add(
           new ImmutableMap.Builder<String, Object>().put("id", new Integer(i)).build());
