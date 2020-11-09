@@ -5,13 +5,13 @@
     <parent>
         <groupId>com.connexta</groupId>
         <artifactId>ddf-jsonrpc</artifactId>
-        <version>0.5-SNAPSHOT</version>
+        <version>0.6-SNAPSHOT</version>
     </parent>
 
     <artifactId>ddf-rpc-api</artifactId>
 
     <packaging>bundle</packaging>
-    <name>Connexta :: JSON RPC Main</name>
+    <name>Connexta :: JSON RPC :: Main</name>
 
 
     <dependencies>

@@ -10,8 +10,8 @@
   <name>Connexta :: JSON RPC </name>
 
   <modules>
-    <module>ddf-rpc-api</module>
     <module>email</module>
+    <module>ddf-rpc-api</module>
     <module>jsonrpc-features</module>
   </modules>
 
