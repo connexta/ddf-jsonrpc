@@ -91,9 +91,8 @@ public class PlatformMethods implements MethodSet {
             .filter(Map.class::isInstance)
             .map(paramMap -> (Map<String, Object>) paramMap);
 
-    // Exclude cases where neither were sent or both were sent
-    if ((!ids.isPresent() && !queryParams.isPresent())
-        || (ids.isPresent() && queryParams.isPresent())) {
+    final boolean exactlyOneParam = ids.isPresent() ^ queryParams.isPresent();
+    if (!exactlyOneParam) {
       return rpc.error(
           Error.INVALID_PARAMS,
           "Exactly one of `ids` or `query` must be present in request (at least one but not both)");
