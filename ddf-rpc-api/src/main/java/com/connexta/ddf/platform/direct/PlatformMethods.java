@@ -41,21 +41,7 @@ public class PlatformMethods implements MethodSet {
 
   private final RpcFactory rpc = new RpcFactoryImpl();
 
-  private final Map<String, RpcMethod> METHODS;
-
-  {
-    Map<String, RpcMethod> builder = new HashMap<>();
-    builder.put(
-        "ddf.platform/getActions",
-        rpc.method(
-            this::getActionsByIds,
-            "Takes either a list of metacard ids or a query in the form of `ddf.catalog/query`"
-                + " and returns all actions available on the metacards. `params` takes: ONLY ONE OF `ids` "
-                + "(value: List(String - valid metacard ids), max ids:"
-                + ACTION_ID_QUERY_LIMIT
-                + ") or `query` (See parameters available on `ddf.catalog/query`.  "));
-    METHODS = builder;
-  }
+  private final Map<String, RpcMethod> methods;
 
   private CatalogMethods catalogMethods;
 
@@ -74,11 +60,23 @@ public class PlatformMethods implements MethodSet {
     this.actionRegistry = actionRegistry;
     this.catalogMethods = catalogMethods;
     this.filterBuilder = filterBuilder;
+
+    Map<String, RpcMethod> builder = new HashMap<>();
+    builder.put(
+        "ddf.platform/getActions",
+        rpc.method(
+            this::getActionsByIds,
+            "Takes either a list of metacard ids or a query in the form of `ddf.catalog/query`"
+                + " and returns all actions available on the metacards. `params` takes: ONLY ONE OF `ids` "
+                + "(value: List(String - valid metacard ids), max ids:"
+                + ACTION_ID_QUERY_LIMIT
+                + ") or `query` (See parameters available on `ddf.catalog/query`.  "));
+    methods = builder;
   }
 
   @Override
   public Map<String, RpcMethod> getMethods() {
-    return METHODS;
+    return methods;
   }
 
   private Object getActionsByIds(Map<String, Object> params) {
