@@ -833,7 +833,7 @@ public class CatalogMethods implements MethodSet {
     Set<String> facetAttributes = new HashSet<>((Collection) facets.get("facetAttributes"));
 
     SortFacetsBy sortKey = SortFacetsBy.COUNT;
-    if (facets.containsKey("sortKey") && facets.get("sortKey") instanceof String) {
+    if (facets.get("sortKey") instanceof String) {
       String sortKeyString = (String) facets.get("sortKey");
       if (sortKeyString.equalsIgnoreCase("INDEX")) {
         sortKey = SortFacetsBy.INDEX;
@@ -854,14 +854,14 @@ public class CatalogMethods implements MethodSet {
     }
 
     int facetLimit = 100;
-    if (facets.containsKey("facetLimit") && facets.get("facetLimit") instanceof Integer) {
+    if (facets.get("facetLimit") instanceof Integer) {
       // TODO (RCZ) - For these checks, do we want to modify the above logic to also return an error
       //  if its not an integer/string/etc - as opposed to now returning the default silently
       facetLimit = (Integer) facets.get("facetLimit");
     }
 
     int minFacetCount = 1;
-    if (facets.containsKey("minFacetCount") && facets.get("minFacetCount") instanceof Integer) {
+    if (facets.get("minFacetCount") instanceof Integer) {
       minFacetCount = (Integer) facets.get("minFacetCount");
     }
 
