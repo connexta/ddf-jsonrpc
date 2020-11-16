@@ -612,6 +612,10 @@ public class CatalogMethods implements MethodSet {
     //                        name, true, true, false, false, BasicTypes.STRING_TYPE));
 
     if (ad == null) {
+      LOGGER.debug(
+          "An attribute could not be found in the attribute registry and will not be stored. Name: '{}'. Value: '{}'",
+          name,
+          value);
       return pairOf(new AttributeImpl(name, (Serializable) null), null);
     }
     if (value == null) {
