@@ -648,9 +648,7 @@ public class CatalogMethods implements MethodSet {
                 null);
           } catch (DateTimeParseException e) {
             return pairOf(
-                null,
-                String.format(
-                    "Could not parse '%s' as iso8601 string".format(String.valueOf(value))));
+                null, String.format("Could not parse '%s' as iso8601 date string", value));
           }
         case BOOLEAN:
           return pairOf(
@@ -673,7 +671,9 @@ public class CatalogMethods implements MethodSet {
                 null);
           } catch (NumberFormatException e) {
             return pairOf(
-                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+                null,
+                String.format(
+                    "Could not convert value for '%s' to a short. \n%s", name, e.toString()));
           }
         case INTEGER:
           try {
@@ -687,7 +687,9 @@ public class CatalogMethods implements MethodSet {
                 null);
           } catch (NumberFormatException e) {
             return pairOf(
-                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+                null,
+                String.format(
+                    "Could not convert value for '%s' to an integer. \n%s", name, e.toString()));
           }
         case LONG:
           try {
@@ -701,7 +703,9 @@ public class CatalogMethods implements MethodSet {
                 null);
           } catch (NumberFormatException e) {
             return pairOf(
-                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+                null,
+                String.format(
+                    "Could not convert value for '%s' to a long. \n%s", name, e.toString()));
           }
         case FLOAT:
           try {
@@ -715,7 +719,9 @@ public class CatalogMethods implements MethodSet {
                 null);
           } catch (NumberFormatException e) {
             return pairOf(
-                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+                null,
+                String.format(
+                    "Could not convert value for '%s' to a float. \n%s", name, e.toString()));
           }
         case DOUBLE:
           try {
@@ -729,7 +735,9 @@ public class CatalogMethods implements MethodSet {
                 null);
           } catch (NumberFormatException e) {
             return pairOf(
-                null, String.format("Could not convert value for '%s'. \n%s", name, e.toString()));
+                null,
+                String.format(
+                    "Could not convert value for '%s' to a double. \n%s", name, e.toString()));
           }
         case GEOMETRY:
         case STRING:
