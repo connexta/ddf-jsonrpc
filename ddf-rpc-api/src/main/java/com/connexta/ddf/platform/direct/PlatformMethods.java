@@ -70,7 +70,7 @@ public class PlatformMethods implements MethodSet {
                 + " and returns all actions available on the metacards. `params` takes: ONLY ONE OF `ids` "
                 + "(value: List(String - valid metacard ids), max ids:"
                 + ACTION_ID_QUERY_LIMIT
-                + ") or `query` (See parameters available on `ddf.catalog/query`.  "));
+                + ") or `query` (See parameters available on `ddf.catalog/query`).  "));
     methods = builder;
   }
 
