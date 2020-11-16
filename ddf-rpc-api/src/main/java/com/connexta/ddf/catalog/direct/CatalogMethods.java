@@ -94,7 +94,7 @@ public class CatalogMethods implements MethodSet {
   private static final DateTimeFormatter DATE_FORMATTER =
       DateTimeFormatter.ofPattern(ISO_8601_DATE_STRING).withZone(ZoneOffset.UTC);
 
-  private final boolean blocklistDisabled;
+  private final boolean blocklistEnabled;
 
   private final List<String> blocklist;
 
@@ -188,9 +188,9 @@ public class CatalogMethods implements MethodSet {
     this.metacardMap = metacardMap;
     this.listHandler = listHandler;
 
-    String blocklistDisabledString =
-        System.getProperty("com.connexta.ddf-jsonrpc.return-property-blocklist-disable", "false");
-    blocklistDisabled = Boolean.parseBoolean(blocklistDisabledString);
+    String blocklistEnabledString =
+        System.getProperty("com.connexta.ddf-jsonrpc.return-property-blocklist-enabled", "true");
+    blocklistEnabled = Boolean.parseBoolean(blocklistEnabledString);
 
     String blocklistString =
         System.getProperty(
@@ -488,10 +488,11 @@ public class CatalogMethods implements MethodSet {
   }
 
   private Map<String, Serializable> blockSensitive(Map<String, Serializable> properties) {
-    if (blocklistDisabled) {
+    if (blocklistEnabled) {
+      blocklist.forEach(properties::remove);
       return properties;
     }
-    blocklist.forEach(properties::remove);
+
     return properties;
   }
 
