@@ -73,7 +73,7 @@ public class MetacardTypeMethods implements MethodSet {
   }
 
   private Object getMetacardType(Map<String, Object> params) {
-    if (!params.containsKey("metacardType") || !(params.get("metacardType") instanceof String)) {
+    if (!(params.get("metacardType") instanceof String)) {
       return rpc.error(
           Error.INVALID_PARAMS,
           "`metacardType` must be present and a string value",
