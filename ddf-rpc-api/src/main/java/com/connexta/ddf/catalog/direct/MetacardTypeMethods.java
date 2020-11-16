@@ -35,24 +35,9 @@ public class MetacardTypeMethods implements MethodSet {
 
   private static final String ISINJECTED_KEY = "isInjected";
 
-  private final Map<String, RpcMethod> METHODS;
+  private final Map<String, RpcMethod> methods;
 
   private final RpcFactory rpc = new RpcFactoryImpl();
-
-  {
-    Map<String, RpcMethod> builder = new HashMap<>();
-    builder.put(
-        "ddf.catalog/allMetacardTypes",
-        rpc.method(
-            this::getAllMetacardTypes,
-            "Returns all current metacard types in the system (including injected attributes)"));
-    builder.put(
-        "ddf.catalog/metacardType",
-        rpc.method(
-            this::getMetacardType,
-            "Returns requested metacardType (including injected attributes). Params: `metacardType`: String"));
-    METHODS = builder;
-  }
 
   private final List<InjectableAttribute> injectableAttributes;
 
@@ -67,11 +52,24 @@ public class MetacardTypeMethods implements MethodSet {
     this.injectableAttributes = injectableAttributes;
     this.attributeRegistry = attributeRegistry;
     this.metacardTypes = metacardTypes;
+
+    Map<String, RpcMethod> builder = new HashMap<>();
+    builder.put(
+        "ddf.catalog/allMetacardTypes",
+        rpc.method(
+            this::getAllMetacardTypes,
+            "Returns all current metacard types in the system (including injected attributes)"));
+    builder.put(
+        "ddf.catalog/metacardType",
+        rpc.method(
+            this::getMetacardType,
+            "Returns requested metacardType (including injected attributes). Params: `metacardType`: String"));
+    methods = builder;
   }
 
   @Override
   public Map<String, RpcMethod> getMethods() {
-    return METHODS;
+    return methods;
   }
 
   private Object getMetacardType(Map<String, Object> params) {
