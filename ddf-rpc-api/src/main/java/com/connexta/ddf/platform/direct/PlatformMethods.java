@@ -132,7 +132,6 @@ public class PlatformMethods implements MethodSet {
       return rpc.error(Error.INTERNAL_ERROR, e.getMessage());
     }
 
-    // TODO (RCZ) - Send to action provider
     return mapOf(
         "actions",
         queryResponse
