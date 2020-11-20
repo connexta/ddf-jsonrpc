@@ -430,8 +430,7 @@ public class CatalogMethods implements MethodSet {
     Map<String, Serializable> properties = new HashMap<>();
     if (params.containsKey("properties")) {
       // For now -- only support a hardcoded key of facets/sort. This could be changed to support
-      // generic
-      //   properties in the future but would need to consider security aspects first.
+      // generic properties in the future but would need to consider security aspects first.
 
       Map<String, Object> paramProperties = (Map<String, Object>) params.get("properties");
 
