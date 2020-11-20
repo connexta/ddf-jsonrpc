@@ -10,7 +10,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import com.connexta.jsonrpc.RpcFactory;
 import com.connexta.jsonrpc.email.EmailResolver;
 import com.connexta.jsonrpc.impl.RpcFactoryImpl;
-import com.google.common.collect.ImmutableMap;
+import com.connexta.util.MapFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,8 +42,7 @@ public class SubscriptionMethodsTest {
     initMocks(this);
     testSubscription = new SubscriptionMethods(persistentStore, emailResolver, rpcFactory);
     for (int i = 0; i < 6; i++) {
-      testSubscriptions.add(
-          new ImmutableMap.Builder<String, Object>().put("id", new Integer(i)).build());
+      testSubscriptions.add(MapFactory.mapOf("id", i));
     }
   }
 

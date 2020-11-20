@@ -142,6 +142,8 @@
                         <Import-Package>
                             !com.google.common.util.concurrent.internal,
                             !com.google.errorprone.annotations.*,
+                            !com.google.common.*,
+
                             !javax.annotation,
                             !org.checkerframework.checker.nullness.qual,
 
@@ -167,9 +169,6 @@
                             ddf.catalog.validation;version="[2.19,3)",
                             ddf.catalog;version="[2.19,3)",
                             org.codice.ddf.configuration;version="[2.19,3)",
-
-                            org.apache.commons.lang3.tuple;version="[3.8.0,4.0.0)",
-                            org.apache.commons.lang3;version="[3.8.0,4.0.0)",
 
                             org.apache.shiro.subject;version="[1.4,2)",
                             org.apache.shiro;version="[1.4.0,2.0.0)",
