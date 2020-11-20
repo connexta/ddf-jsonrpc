@@ -434,10 +434,10 @@ public class CatalogMethods implements MethodSet {
 
       Map<String, Object> paramProperties = (Map<String, Object>) params.get("properties");
 
-      if (properties.containsKey("additional-sort-bys")) {
+      if (paramProperties.containsKey("additional-sort-bys")) {
         SortBy[] additionalSortBys =
             (SortBy[])
-                ((List) properties.get("additional-sort-bys"))
+                ((List) paramProperties.get("additional-sort-bys"))
                     .stream()
                     .map(sort -> getSortBy((Map) sort))
                     .toArray(SortBy[]::new);
