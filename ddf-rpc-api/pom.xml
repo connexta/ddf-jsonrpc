@@ -240,7 +240,7 @@
                                     Whatever you do PLEASE do not just increase this size limit.
                                     Ensure that the size increase is justified- as one goal is to keep
                                     this library as lightweight as possible. Are there things we can
-                                    remove/un-embed? Dig into what is contributing to the size increase
+                                    remove/un-embed? Dig into what is contributing to the size, and only increase
                                     this as a last resort. -->
                                     <maxArtifactSize>256_KB</maxArtifactSize>
                                 </ArtifactSizeEnforcerRule>
