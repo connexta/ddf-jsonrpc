@@ -143,6 +143,7 @@
                             !com.google.common.util.concurrent.internal,
                             !com.google.errorprone.annotations.*,
                             !com.google.common.*,
+                            !org.apache.commons.lang3.*,
 
                             !javax.annotation,
                             !org.checkerframework.checker.nullness.qual,
