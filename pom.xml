@@ -4,7 +4,7 @@
 
   <groupId>com.connexta</groupId>
   <artifactId>ddf-jsonrpc</artifactId>
-  <version>0.7</version>
+  <version>0.8-SNAPSHOT</version>
 
   <packaging>pom</packaging>
   <name>Connexta :: JSON RPC </name>
@@ -45,7 +45,7 @@
     <url>https://github.com/connexta/ddf-jsonrpc.git</url>
     <connection>scm:git:https://github.com/connexta/ddf-jsonrpc.git</connection>
     <developerConnection>scm:git:https://github.com/connexta/ddf-jsonrpc.git</developerConnection>
-    <tag>ddf-jsonrpc-0.7</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
