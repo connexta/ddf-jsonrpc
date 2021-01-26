@@ -19,7 +19,8 @@ network. It should have the following properties:
 Currently there is support for 2.19 and 2.25+ (this may run on versions between, but has not been tested).
 In order to install a specific version into a running distribution, build or install these artifacts locally, then run:
 
-`feature:repo-add mvn:com.connexta.jsonrpc/jsonrpc-features/0.7-SNAPSHOT/xml/features`
+`feature:repo-add mvn:com.connexta.jsonrpc/jsonrpc-features/0.8-SNAPSHOT/xml/features`
 
+To use the most recently released version and do not wish to build artifacts locally (at time of writing) replace `0.8-SNAPSHOT` with `0.7`
 
 This will add the two features for the previously mentioned features. Run `feature:install jsonrpc-2.19` or `feature:install jsonrpc-2.25` depending on which version you need.
