@@ -429,9 +429,6 @@ public class CatalogMethods implements MethodSet {
 
     Map<String, Serializable> properties = new HashMap<>();
     if (params.containsKey("properties")) {
-      // For now -- only support a hardcoded key of facets/sort. This could be changed to support
-      // generic properties in the future but would need to consider security aspects first.
-
       Map<String, Object> paramProperties = (Map<String, Object>) params.get("properties");
 
       if (paramProperties.containsKey("additional-sort-bys")) {
@@ -451,6 +448,13 @@ public class CatalogMethods implements MethodSet {
         }
         properties.put("facet-properties", facetOrError.getLeft());
       }
+      Map<String, Serializable> unchecked =
+          paramProperties
+              .entrySet()
+              .stream()
+              .filter(entry -> entry.getValue() instanceof Serializable)
+              .collect(Collectors.toMap(Map.Entry::getKey, e -> (Serializable) e.getValue()));
+      properties.put("unchecked-properties", new HashMap<>(unchecked));
     }
     QueryRequestImpl queryRequest =
         new QueryRequestImpl(
