@@ -18,10 +18,13 @@ import java.util.List;
 import java.util.Map;
 import org.codice.ddf.persistence.PersistenceException;
 import org.codice.ddf.persistence.PersistentStore;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 public class SubscriptionMethodsTest {
   private static SubscriptionMethods testSubscription;
 
@@ -36,8 +39,8 @@ public class SubscriptionMethodsTest {
   private static List<String> resultingSubscriptionList =
       new ArrayList<String>(Arrays.asList("0", "1", "2", "3", "4", "5"));
 
-  @Before
-  public void setUp() throws Exception {
+  @BeforeEach
+  public void setUp() {
     testSubscriptions = new ArrayList<>();
     initMocks(this);
     testSubscription = new SubscriptionMethods(persistentStore, emailResolver, rpcFactory);
