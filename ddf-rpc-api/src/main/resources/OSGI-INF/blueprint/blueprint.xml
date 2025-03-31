@@ -134,7 +134,10 @@
 
   <service ref="jsonRpcHttpServlet" interface="javax.servlet.Servlet">
     <service-properties>
-      <entry key="urlPatterns" value="/direct/*"/>
+      <entry key="osgi.http.whiteboard.servlet.pattern" value="/direct/*"/>
+      <entry key="osgi.http.whiteboard.servlet.name" value="jsonRpcHttpServlet" />
+      <entry key="osgi.http.whiteboard.select" value="(osg.http.whiteboard.context.name=jsonRpcHttpServlet)" />
+      <entry key="osgi.http.whiteboard.servlet.asyncSupported" value="true" />
     </service-properties>
   </service>
 </blueprint>
