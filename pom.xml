@@ -20,10 +20,10 @@
     <maven.compiler.target>17</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <ddf.version>2.29.23</ddf.version>
+    <ddf.version>2.29.24-SNAPSHOT</ddf.version>
     <ddf.support.version>2.3.16</ddf.support.version>
 
-    <opengis.version>24.6</opengis.version>
+    <geotools.version>33.1</geotools.version>
     <releases.repository.url />
     <snapshots.repository.url />
     <maven.release.plugin.version>3.0.0-M1</maven.release.plugin.version>
