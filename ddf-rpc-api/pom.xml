@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.geotools</groupId>
             <artifactId>gt-cql</artifactId>
-            <version>${opengis.version}</version>
+            <version>${geotools.version}</version>
             <exclusions>
                 <exclusion>
                     <artifactId>jai_core</artifactId>

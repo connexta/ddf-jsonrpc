@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import org.opengis.filter.Filter;
+import org.geotools.api.filter.Filter;
 
 /**
  * A class that extends normal catalog methods. Represented as a map where the key is the Json Rpc
