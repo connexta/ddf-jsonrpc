@@ -22,7 +22,33 @@ import org.slf4j.LoggerFactory;
 public class JsonRpcHttpServlet extends HttpServlet {
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonRpcHttpServlet.class);
   private static final Gson GSON =
-      new GsonBuilder().disableHtmlEscaping().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").create();
+      new GsonBuilder()
+          .setObjectToNumberStrategy(
+              reader -> {
+                String numberAsString = reader.nextString();
+
+                try {
+                  return Integer.parseInt(numberAsString);
+                } catch (NumberFormatException nfe1) {
+                  try {
+                    return Long.parseLong(numberAsString);
+                  } catch (NumberFormatException nfe2) {
+                    try {
+                      return Float.parseFloat(numberAsString);
+                    } catch (NumberFormatException nfe3) {
+                      try {
+                        return Double.parseDouble(numberAsString);
+                      } catch (NumberFormatException nfe4) {
+                        throw new NumberFormatException(
+                            String.format("Could not parse input string \"%s\"", numberAsString));
+                      }
+                    }
+                  }
+                }
+              })
+          .disableHtmlEscaping()
+          .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+          .create();
 
   private Method method;
 
@@ -47,6 +73,7 @@ public class JsonRpcHttpServlet extends HttpServlet {
     String payload = req.getReader().lines().collect(Collectors.joining("\n"));
     LOGGER.trace("Got request:\n{}", payload);
     Object request = GSON.fromJson(payload, Object.class);
+    LOGGER.trace("Request from Json: {}", request);
     Object response;
 
     if (request instanceof List) {
@@ -58,6 +85,30 @@ public class JsonRpcHttpServlet extends HttpServlet {
     if (LOGGER.isTraceEnabled()) {
       Gson pprintGson =
           new GsonBuilder()
+              .setObjectToNumberStrategy(
+                  reader -> {
+                    String numberAsString = reader.nextString();
+
+                    try {
+                      return Integer.parseInt(numberAsString);
+                    } catch (NumberFormatException nfe1) {
+                      try {
+                        return Long.parseLong(numberAsString);
+                      } catch (NumberFormatException nfe2) {
+                        try {
+                          return Float.parseFloat(numberAsString);
+                        } catch (NumberFormatException nfe3) {
+                          try {
+                            return Double.parseDouble(numberAsString);
+                          } catch (NumberFormatException nfe4) {
+                            throw new NumberFormatException(
+                                String.format(
+                                    "Could not parse input string \"%s\"", numberAsString));
+                          }
+                        }
+                      }
+                    }
+                  })
               .disableHtmlEscaping()
               .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
               .setPrettyPrinting()
